@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Router;
 
 use Error;
@@ -7,7 +6,8 @@ use Error;
 /**
  * Error with a cause and a status code
  */
-class RequestError extends Error {
+class RequestError extends Error
+{
 
     /**
      * Creates RequestError. All %key% in message are replaced with key
@@ -34,7 +34,8 @@ class RequestError extends Error {
      * @param string $cause Cause of the error
      * @param string $message Message of the error
      */
-    public function __construct(int $code, string $cause, string $message) {
+    public function __construct(int $code, string $cause, string $message)
+    {
         parent::__construct($message, $code);
         $this->cause = $cause;
     }
@@ -46,9 +47,9 @@ class RequestError extends Error {
     public function GetJSON(): array
     {
         return [
-            'cause' => $this->cause,
+            'cause'   => $this->cause,
             'message' => $this->message,
-            'code' => $this->code
+            'code'    => $this->code,
         ];
     }
 

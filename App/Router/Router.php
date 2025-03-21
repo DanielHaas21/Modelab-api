@@ -1,11 +1,11 @@
 <?php
-
 namespace App\Router;
 
 /**
- * Router dispatches requests using stored routes and middleware 
+ * Router dispatches requests using stored routes and middleware
  */
-class Router {
+class Router
+{
 
     /**
      * All route definitions
@@ -36,30 +36,37 @@ class Router {
         $response = new Response();
 
         try {
-            $method = $_SERVER['REQUEST_METHOD'];
+            $method           = $_SERVER['REQUEST_METHOD'];
             $route_definition = $this->routes->FindMatchingRouteDefinition($request_uri);
 
-            if($route_definition == null)
-                throw new RequestError(404, 'server', '\'' . $request_uri .  '\' not found');
-
-            if(!$route_definition->IsMethodDefined($method))
-                throw new RequestError(405, 'server', 'Method ' . $method . ' not allowed for \'' . $request_uri .  '\'');
-
-            $callback = $route_definition->GetMethodCallback($method);
-            $variables = $route_definition->GetVariables($request_uri);
-
-            $request = new Request($request_uri, $variables);   
-
-            foreach($this->middleware as $middleware) {
-                $middleware($request, $response);
-                if($response->HasResponse()) break;
+            if ($route_definition == null) {
+                throw new RequestError(404, 'server', '\'' . $request_uri . '\' not found');
             }
 
-            if(!$response->HasResponse()) 
+            if (! $route_definition->IsMethodDefined($method)) {
+                throw new RequestError(405, 'server', 'Method ' . $method . ' not allowed for \'' . $request_uri . '\'');
+            }
+
+            $callback  = $route_definition->GetMethodCallback($method);
+            $variables = $route_definition->GetVariables($request_uri);
+
+            $request = new Request($request_uri, $variables);
+
+            foreach ($this->middleware as $middleware) {
+                $middleware($request, $response);
+                if ($response->HasResponse()) {
+                    break;
+                }
+
+            }
+
+            if (! $response->HasResponse()) {
                 $callback($request, $response);
-        } catch(RequestError $error) {
+            }
+
+        } catch (RequestError $error) {
             $response->SetError($error);
-        } catch(Throwable $error) {
+        } catch (Throwable $error) {
             $response->SetError(new RequestError(500, 'server', $error->getMessage()));
         }
 
