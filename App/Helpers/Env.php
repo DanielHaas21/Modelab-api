@@ -1,0 +1,39 @@
+<?php 
+namespace App\Helpers;
+/**
+ * ENV
+ * 
+ * With this class you can use .env variables 
+ * @var ENV[] is the superglobal you can call the ENV variables with
+ * 
+ * 
+ * Usage:
+ * To use .env, on top of your file call this method:
+ * @method void load()
+ */
+final class ENV{
+    /**
+     * Loads an .env file
+     * 
+     * @param string $filePath must be relative to where the script is being executed
+     * @throws \Exception
+     * @return void
+     */
+    public static  function load(string $filePath): void {
+        if (!file_exists($filePath)) {
+            throw new \Exception(".env file not found at: $filePath");
+        }
+    
+        $lines = file($filePath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        foreach ($lines as $line) {
+            if (strpos(trim($line), '#') === 0) continue;
+    
+            list($key, $value) = explode('=', $line, 2);
+            
+            $key = trim($key);
+            $value = trim($value, "\"'"); 
+    
+            $_ENV[$key] = $value;
+        }
+    }
+}

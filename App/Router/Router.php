@@ -1,6 +1,8 @@
 <?php
 namespace App\Router;
 
+use Throwable;
+
 /**
  * Router dispatches requests using stored routes and middleware
  */
