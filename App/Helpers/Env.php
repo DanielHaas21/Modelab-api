@@ -1,5 +1,8 @@
 <?php 
 namespace App\Helpers;
+
+use Exception;
+
 /**
  * ENV
  * 
@@ -16,12 +19,12 @@ final class ENV{
      * Loads an .env file
      * 
      * @param string $filePath must be relative to where the script is being executed
-     * @throws \Exception
+     * @throws Exception
      * @return void
      */
     public static  function load(string $filePath): void {
         if (!file_exists($filePath)) {
-            throw new \Exception(".env file not found at: $filePath");
+            throw new Exception(".env file not found at: $filePath");
         }
     
         $lines = file($filePath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);

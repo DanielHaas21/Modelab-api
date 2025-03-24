@@ -12,7 +12,7 @@ require_once 'PDOtrait.php';
  * 
  * Naming conventions
  * - First word represent the type of CRUD function that is Select Insert Update Delete
- * - Misc as a first word represents methods that dont the former categorization
+ * - Misc as a first word represents methods that dont fit the former categorization
  * - WithCondition means its the variant with condition only and vice versa
  * - Conditiniable means both condition or not is supported
  * - Distinct
