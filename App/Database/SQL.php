@@ -35,8 +35,7 @@ class SQL
         self::InitPDO();
         $sql_com = self::$pdo->prepare("SELECT TABLE_NAME FROM information_schema.tables WHERE table_schema = :dbName AND table_name = :tableName LIMIT 1");
 
-        global $dbname;
-        if ($sql_com->execute(['dbName' => $dbname, 'tableName' => $table])) {
+        if ($sql_com->execute(['dbName' => DB_CONFIG['database'], 'tableName' => $table])) {
             if ($sql_com->rowCount() === 0) {
                 return false;
             } else {

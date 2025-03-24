@@ -7,14 +7,14 @@ use Exception;
  * ENV
  *
  * With this class you can use .env variables
- * @var ENV[] is the superglobal you can call the ENV variables with
+ * @var Env[] is the superglobal you can call the ENV variables with
  *
  *
  * Usage:
  * To use .env, on top of your file call this method:
- * @method void load()
+ * @method void Load()
  */
-final class ENV
+final class Env
 {
     /**
      * Loads an .env file
@@ -23,7 +23,7 @@ final class ENV
      * @throws Exception
      * @return void
      */
-    public static function load(string $filePath): void
+    public static function Load(string $filePath): void
     {
         if (! file_exists($filePath)) {
             throw new Exception(".env file not found at: $filePath");

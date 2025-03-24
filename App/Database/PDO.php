@@ -4,10 +4,12 @@
     !DO NOT INCLUDE IT ANYWHERE!
 */
 
-$DBservername = "localhost";
-$DBusername   = "root";
-$DBpassword   = "";
-$DBdatabase   = "modelab-api";
+require_once __DIR__ . '/../../config/db.php';
+
+$DBservername = DB_CONFIG['servername'];
+$DBusername   = DB_CONFIG['username'];
+$DBpassword   = DB_CONFIG['password'];
+$DBdatabase   = DB_CONFIG['database'];
 
 try {
     // Create a new PDO connection to the MySQL server (without selecting a database)

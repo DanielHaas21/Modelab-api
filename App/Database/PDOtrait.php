@@ -8,10 +8,19 @@ require_once __DIR__ . '/../../config/db.php';
  */
 trait PDO
 {
-    protected static $pdo;
+    protected static $pdo = null;
     public static function InitPDO()
     {
-        global $db;
-        self::$pdo = $db;
+        if (self::$pdo != null) {
+            return;
+        }
+
+        $DBservername = DB_CONFIG['servername'];
+        $DBusername   = DB_CONFIG['username'];
+        $DBpassword   = DB_CONFIG['password'];
+        $DBdatabase   = DB_CONFIG['database'];
+
+        self::$pdo = new \PDO("mysql:host=$DBservername;dbname=$DBdatabase", $DBusername, $DBpassword);
+        self::$pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
     }
 }
