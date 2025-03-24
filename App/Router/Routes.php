@@ -40,7 +40,7 @@ class Routes {
             $uri = rtrim($route_prefix, RouteDefinition::URI_SEPARATOR) . $route;
             
             if(isset($this->route_definitions[$uri]))
-                throw new ErrorException('Trying to define a defined route \'' . $uri . '\'');
+                throw new \ErrorException('Trying to define a defined route \'' . $uri . '\'');
 
             $route_definition->ChangeURI($uri);
 

@@ -59,7 +59,7 @@ class Router {
                 $callback($request, $response);
         } catch(RequestError $error) {
             $response->SetError($error);
-        } catch(Throwable $error) {
+        } catch(\Throwable $error) {
             $response->SetError(new RequestError(500, 'server', $error->getMessage()));
         }
 

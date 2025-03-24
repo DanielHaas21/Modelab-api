@@ -109,7 +109,7 @@ class RouteDefinition {
     public function DefineMethod(string $method, callable $callback): void
     {
         if($this->IsMethodDefined($method))
-            throw new ErrorException('Route ' . $method . ' \'' . $this->uri_definition . '\' is already defined');
+            throw new \ErrorException('Route ' . $method . ' \'' . $this->uri_definition . '\' is already defined');
         
         $this->methods[$method] = $callback;
     }
@@ -143,7 +143,7 @@ class RouteDefinition {
     public function GetMethodCallback(string $method): callable
     {
         if(!$this->IsMethodDefined($method))
-            throw new ErrorException('Route \'' . $this->uri_definition . '\' has no method ' . $method . '');
+            throw new \ErrorException('Route \'' . $this->uri_definition . '\' has no method ' . $method . '');
         
         return $this->methods[$method];
     }
@@ -158,7 +158,7 @@ class RouteDefinition {
     {
         $route_regex_groups = [];
         if(!preg_match($this->regex, $uri, $route_regex_groups))
-            throw new ErrorException('URI \'' . $uri . '\' does not match with \'' . $this->uri_definition . '\'');
+            throw new \ErrorException('URI \'' . $uri . '\' does not match with \'' . $this->uri_definition . '\'');
 
         $variables = [];
         for ($i = 1; $i < count($route_regex_groups); $i++) {
