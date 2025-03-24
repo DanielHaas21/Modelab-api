@@ -49,6 +49,7 @@ App folder structure
 ├───autoload.php - Autoloader of classes 
 ├───index.php - Entrypoint of the api
 ├───modelab.cmd - Interface for executing .bat scripts
+├───makefile -  Interface for executing .sh scripts
 └───.htaccess - Rewriting rules for Apache
 ``` 
 
