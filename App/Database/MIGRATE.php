@@ -1,4 +1,4 @@
-<?php 
+<?php
 /*
     This is a bash-bat executable script
     !DO NOT INCLUDE IT ANYWHERE!

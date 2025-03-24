@@ -2,14 +2,17 @@
 
 require_once __DIR__ . '/autoload.php';
 
-use App\Router\Request;
-use App\Router\Response;
-use App\Router\Router;
+use App\Database\SQL;
 
-$router = new Router();
+SQL::InitPDO();
 
-$router->AddGET('/', function (Request $req, Response $res): void {
-    $res->SetText("Modellab API");
-});
+// $router = new Router();
 
-$router->DispatchRequest(Request::GetServerRequestURI());
+// $router->AddGET('/', function (Request $req, Response $res): void {
+//     // $res->SetText("Modellab API");
+
+//     // $value = SQL::MiscMissingTable("user");
+//     // $res->SetText($value);
+// });
+
+// $router->DispatchRequest(Request::GetServerRequestURI());
