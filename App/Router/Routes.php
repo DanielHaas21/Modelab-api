@@ -1,11 +1,11 @@
 <?php
-
 namespace App\Router;
 
 /**
  * Route definitions
  */
-class Routes {
+class Routes
+{
     /**
      * Routes defined
      * @var RouteDefinition[]
@@ -20,8 +20,10 @@ class Routes {
     public function FindMatchingRouteDefinition(string $uri): ?RouteDefinition
     {
         foreach ($this->route_definitions as $route_definition) {
-            if($route_definition->MatchesWithURI($uri))
+            if ($route_definition->MatchesWithURI($uri)) {
                 return $route_definition;
+            }
+
         }
         return null;
     }
@@ -35,12 +37,12 @@ class Routes {
      */
     public function AddRoutes(string $route_prefix, Routes $routes): void
     {
-        foreach($routes->route_definitions as $route => $route_definition)
-        {
+        foreach ($routes->route_definitions as $route => $route_definition) {
             $uri = rtrim($route_prefix, RouteDefinition::URI_SEPARATOR) . $route;
-            
-            if(isset($this->route_definitions[$uri]))
-                throw new \ErrorException('Trying to define a defined route \'' . $uri . '\'');
+
+            if (isset($this->route_definitions[$uri])) {
+                throw new ErrorException('Trying to define a defined route \'' . $uri . '\'');
+            }
 
             $route_definition->ChangeURI($uri);
 
@@ -58,11 +60,11 @@ class Routes {
     private function AddRoute(string $route_uri, callable $callback, string $method): RouteDefinition
     {
         $route_definition = isset($this->route_definitions[$route_uri])
-            ? $this->route_definitions[$route_uri]
-            : new RouteDefinition($route_uri);
-        
+        ? $this->route_definitions[$route_uri]
+        : new RouteDefinition($route_uri);
+
         $route_definition->DefineMethod($method, $callback);
-        
+
         $this->route_definitions[$route_uri] = $route_definition;
 
         return $route_definition;
@@ -100,7 +102,7 @@ class Routes {
     {
         return $this->AddRoute($route, $callback, RequestMethod::PUT);
     }
-    
+
     /**
      * Adds a PATCH route
      * @param string $route

@@ -1,11 +1,11 @@
 <?php
-
 namespace App\Router;
 
 /**
  * Response sends data back to the client
  */
-class Response {
+class Response
+{
 
     /**
      * Content type for text and HTML
@@ -37,19 +37,20 @@ class Response {
     {
         $json = $this->EncodeJSON($error->GetJSON());
 
-        if ($json === false)
+        if ($json === false) {
             $json = '{"message": "Failed to encode JSON", "code": "500"}';
-        
+        }
+
         $this->response = [
-            'code' => 200,
+            'code'         => 200,
             'content_type' => self::$CONTENT_TYPE_JSON,
-            'data' => $json
+            'data'         => $json,
         ];
     }
 
     /**
      * Sets the response to a JSON response.
-     * If fails to encode JSON, sets error response instead 
+     * If fails to encode JSON, sets error response instead
      * @param array $data
      * @param int $code
      * @return void
@@ -62,11 +63,11 @@ class Response {
             $this->SetError(new RequestError(500, 'Failed to encode JSON', 'server'));
             return;
         }
-        
+
         $this->response = [
-            'code' => $code,
+            'code'         => $code,
             'content_type' => self::$CONTENT_TYPE_JSON,
-            'data' => $json
+            'data'         => $json,
         ];
     }
 
@@ -76,12 +77,12 @@ class Response {
      * @param int $code
      * @return void
      */
-    public function SetText(string $text, int $code = 200) : void
+    public function SetText(string $text, int $code = 200): void
     {
         $this->response = [
-            'code' => $code,
+            'code'         => $code,
             'content_type' => self::$CONTENT_TYPE_TEXT,
-            'data' => $text
+            'data'         => $text,
         ];
     }
 
@@ -100,11 +101,13 @@ class Response {
      */
     public function Respond(): void
     {
-        if(!$this->HasResponse()) return;
+        if (! $this->HasResponse()) {
+            return;
+        }
 
-        $code = $this->response['code'];
+        $code         = $this->response['code'];
         $content_type = $this->response['content_type'];
-        $data = $this->response['data'];
+        $data         = $this->response['data'];
 
         http_response_code($code);
         header('Content-Type: ' . $content_type . '; charset=utf-8');

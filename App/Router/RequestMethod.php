@@ -1,11 +1,11 @@
 <?php
-
 namespace App\Router;
 
 /**
  * Enum of HTTP request methods
  */
-class RequestMethod {
+class RequestMethod
+{
     /**
      * GET HTTP method
      * @var string

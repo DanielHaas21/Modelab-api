@@ -8,8 +8,7 @@ use App\Router\Router;
 
 $router = new Router();
 
-$router->AddGET('/', function (Request $req, Response $res): void 
-{
+$router->AddGET('/', function (Request $req, Response $res): void {
     $res->SetText("Modellab API");
 });
 

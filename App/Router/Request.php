@@ -1,11 +1,11 @@
 <?php
-
 namespace App\Router;
 
 /**
  * Request loads client data
  */
-class Request {
+class Request
+{
 
     /**
      * Merges data from $_POST and php://input
@@ -13,12 +13,17 @@ class Request {
      */
     public static function GetJSONInput(): array
     {
-        $raw_data = json_decode(file_get_contents('php://input'), true);
+        $raw_data    = json_decode(file_get_contents('php://input'), true);
         $server_post = isset($_POST) ? $_POST : null;
-        
+
         $post = [];
-        if($raw_data != null) $post = array_merge($post, $raw_data);
-        if($server_post != null) $post = array_merge($post, $server_post);
+        if ($raw_data != null) {
+            $post = array_merge($post, $raw_data);
+        }
+
+        if ($server_post != null) {
+            $post = array_merge($post, $server_post);
+        }
 
         return $post;
     }
@@ -39,8 +44,8 @@ class Request {
     public static function GetServerRequestURI(): string
     {
         $request_uri = explode('?', $_SERVER['REQUEST_URI'])[0];
-        $uri_root = self::GetURIRoot();
-        
+        $uri_root    = self::GetURIRoot();
+
         $request_uri = substr($request_uri, strlen($uri_root));
 
         return RouteDefinition::URI_SEPARATOR . trim($request_uri, RouteDefinition::URI_SEPARATOR);
@@ -58,7 +63,7 @@ class Request {
      */
     private $variables;
     /**
-     * Loaded JSON array 
+     * Loaded JSON array
      * @var array
      */
     private $json;
@@ -68,10 +73,11 @@ class Request {
      * @param string $uri
      * @param array $variables
      */
-    public function __construct(string $uri, array $variables) {
-        $this->uri = $uri;
+    public function __construct(string $uri, array $variables)
+    {
+        $this->uri       = $uri;
         $this->variables = $variables;
-        $this->json = Request::GetJSONInput();
+        $this->json      = Request::GetJSONInput();
     }
 
     /**
