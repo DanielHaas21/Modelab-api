@@ -1,1 +1,4 @@
 .php-cs-fixer.cache
+
+config/*.php
+!config/*.example.php
