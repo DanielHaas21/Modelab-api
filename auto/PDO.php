@@ -7,32 +7,56 @@
 
 require_once __DIR__ . '/../config/db.php';
 
-$DBservername = DB_CONFIG['servername'];
-$DBusername   = DB_CONFIG['username'];
-$DBpassword   = DB_CONFIG['password'];
-$DBdatabase   = DB_CONFIG['database'];
+function echoLine(string $msg): void
+{
+    echo "$msg\n";
+}
 
+function echoError(Exception $e): void
+{
+    echoLine(get_class($e) . ": " . $e->getMessage());
+}
+
+$serverName = DB_CONFIG['servername'];
+$username   = DB_CONFIG['username'];
+$password   = DB_CONFIG['password'];
+$database   = DB_CONFIG['database'];
+
+// Check PDO
+
+echoLine("Initializing PDO...");
+$db = null;
 try {
-    // Create a new PDO connection to the MySQL server (without selecting a database)
-    $db = new PDO("mysql:host=$DBservername", $DBusername, $DBpassword);
+    $db = new PDO("mysql:host=$serverName", $username, $password);
     $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-    // Check if the database exists
-    $query = $db->prepare("SELECT COUNT(*) FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = :dbname");
-    $query->bindParam(':dbname', $DBdatabase);
-    $query->execute();
-
-    // If the database does not exist, create it
-    if ($query->fetchColumn() == 0) {
-
-        $createDbQuery = "CREATE DATABASE `$DBdatabase`";
-        $db->exec($createDbQuery);
-        echo "Database '$DBdatabase' created successfully. \n";
-    } else {
-        echo "Database '$DBdatabase' already exists.  \n";
-    }
 } catch (PDOException $e) {
-    echo "Error: ".get_class($e)."\n";
-    echo $e->getMessage()."\n";
+    echoError($e);
+    echoLine("PDO Failed");
     exit(1);
 }
+echoLine("PDO OK");
+
+// Check database
+
+echoLine("Checking DB '$database'...");
+try {
+    $sql = "SELECT COUNT(*) FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = :dbname";
+    $sql_com = $db->prepare($sql);
+    $sql_com->execute([
+        ':dbname' => $database
+    ]);
+    $databaseExists = $sql_com->fetchColumn() == 0;
+
+    if ($databaseExists) {
+        $sql = "CREATE DATABASE `$database`";
+        $db->exec($sql);
+        echoLine("DB was created.");
+    } else {
+        echoLine("DB already exists.");
+    }
+} catch (PDOException $e) {
+    echoError($e);
+    echoLine("Checking DB Failed");
+    exit(1);
+}
+echoLine("DB '$database' OK");
