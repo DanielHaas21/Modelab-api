@@ -30,8 +30,8 @@ abstract class BaseModel
 
     /**
      * Constructs an array of differences between DB table and the
-     * @return array Column name is the key
-     *               Item: [
+     * @return array<string, array{reason: string, dbValue: ?string, modelValue: ?string}> Column name is the key
+     *               Item is [
      *                 'reason' => The reason why this column is different,
      *                 'dbValue' => The database value/type (if applicable),
      *                 'modelValue' => The model value/type (if applicable),
@@ -43,8 +43,8 @@ abstract class BaseModel
          * @param array $differences
          * @param string $column
          * @param string $reason
-         * @param mixed $dbValue
-         * @param mixed $modelValue
+         * @param ?string $dbValue
+         * @param ?string $modelValue
          * @return void
          */
         function AddDifference(array &$differences, string $column, string $reason, ?string $dbValue = null, ?string $modelValue = null): void
@@ -188,7 +188,7 @@ abstract class BaseModel
      * Creates an instance of the model and sets data
      * <br>Shouldn't be called from the base class
      * @param array $data ["column" => "value"]
-     * @throws \App\Database\DatabaseException
+     * @throws DatabaseException
      * @return object
      */
     final public static function CreateFrom(array $data): object
@@ -212,7 +212,6 @@ abstract class BaseModel
             }
 
             $reflectionProperty = $reflectionClass->getProperty($name);
-            $reflectionProperty->setAccessible(true);
             $reflectionProperty->setValue($model, $data[$name]);
         }
 
@@ -243,7 +242,7 @@ abstract class BaseModel
     /**
      * Default in every model
      * @sqlType INT
-     * @sql NOT NULL PRIMARY KEY
+     * @sql NOT NULL AUTO_INCREMENT PRIMARY KEY
      * @var int
      */
     public $id;
