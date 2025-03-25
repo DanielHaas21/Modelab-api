@@ -106,11 +106,11 @@ class Response
         }
 
         $code         = $this->response['code'];
-        $content_type = $this->response['content_type'];
+        $contentType = $this->response['content_type'];
         $data         = $this->response['data'];
 
         http_response_code($code);
-        header('Content-Type: ' . $content_type . '; charset=utf-8');
+        header('Content-Type: ' . $contentType . '; charset=utf-8');
 
         echo $data;
     }

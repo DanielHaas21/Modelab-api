@@ -13,16 +13,16 @@ class Request
      */
     public static function GetJSONInput(): array
     {
-        $raw_data    = json_decode(file_get_contents('php://input'), true);
-        $server_post = isset($_POST) ? $_POST : null;
+        $rawData    = json_decode(file_get_contents('php://input'), true);
+        $serverPost = isset($_POST) ? $_POST : null;
 
         $post = [];
-        if ($raw_data != null) {
-            $post = array_merge($post, $raw_data);
+        if ($rawData != null) {
+            $post = array_merge($post, $rawData);
         }
 
-        if ($server_post != null) {
-            $post = array_merge($post, $server_post);
+        if ($serverPost != null) {
+            $post = array_merge($post, $serverPost);
         }
 
         return $post;
@@ -43,12 +43,12 @@ class Request
      */
     public static function GetServerRequestURI(): string
     {
-        $request_uri = explode('?', $_SERVER['REQUEST_URI'])[0];
-        $uri_root    = self::GetURIRoot();
+        $requestUri = explode('?', $_SERVER['REQUEST_URI'])[0];
+        $uriRoot    = self::GetURIRoot();
 
-        $request_uri = substr($request_uri, strlen($uri_root));
+        $requestUri = substr($requestUri, strlen($uriRoot));
 
-        return RouteDefinition::URI_SEPARATOR . trim($request_uri, RouteDefinition::URI_SEPARATOR);
+        return RouteDefinition::URI_SEPARATOR . trim($requestUri, RouteDefinition::URI_SEPARATOR);
     }
 
     /**

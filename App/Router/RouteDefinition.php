@@ -24,37 +24,37 @@ class RouteDefinition
     /**
      * Extracts regex and variable names from the uri definition
      * @param string $uri
-     * @return array{regex: string, variable_names: array}
+     * @return array{regex: string, variableNames: array}
      */
     private static function ExtractRegexAndVariableNames(string $uri): array
     {
-        $route_parts    = array_filter(explode(self::URI_SEPARATOR, $uri));
-        $variable_names = [];
+        $routeParts    = array_filter(explode(self::URI_SEPARATOR, $uri));
+        $variableNames = [];
 
-        $quoted_uri_separator = preg_quote(self::URI_SEPARATOR, self::URI_SEPARATOR);
+        $quotedUriSeparator = preg_quote(self::URI_SEPARATOR, self::URI_SEPARATOR);
 
-        $route_regex = '';
-        foreach ($route_parts as $route_part) {
-            $route_regex .= $quoted_uri_separator;
+        $routeRegex = '';
+        foreach ($routeParts as $routePart) {
+            $routeRegex .= $quotedUriSeparator;
 
-            $variable_match_groups = [];
-            $variable_match        = preg_match(self::VARIABLE_REGEX, $route_part, $variable_match_groups);
-            if ($variable_match) {
-                $route_regex .= '(.+)';
-                $variable_names[] = $variable_match_groups[1];
+            $variableMatchGroups = [];
+            $variableMatch        = preg_match(self::VARIABLE_REGEX, $routePart, $variableMatchGroups);
+            if ($variableMatch) {
+                $routeRegex .= '(.+)';
+                $variableNames[] = $variableMatchGroups[1];
             } else {
-                $route_regex .= preg_quote($route_part, self::URI_SEPARATOR);
+                $routeRegex .= preg_quote($routePart, self::URI_SEPARATOR);
             }
 
         }
 
-        if (strlen($route_regex) == 0) {
-            $route_regex = $quoted_uri_separator;
+        if (strlen($routeRegex) == 0) {
+            $routeRegex = $quotedUriSeparator;
         }
 
         return [
-            'regex'          => '/^' . $route_regex . '$/',
-            'variable_names' => $variable_names,
+            'regex'          => '/^' . $routeRegex . '$/',
+            'variableNames' => $variableNames,
         ];
     }
 
@@ -62,7 +62,7 @@ class RouteDefinition
      * The URI as provided
      * @var string
      */
-    private $uri_definition;
+    private $uriDefinition;
     /**
      * Array of supported methods
      * @var array<string, callable(Request $req, Response $res): void>
@@ -78,7 +78,7 @@ class RouteDefinition
      * Regex for extracting variables from a URI
      * @var
      */
-    private $regex_variables;
+    private $regexVariables;
 
     /**
      * Constructs the RouteDefinition and prepares regex
@@ -98,11 +98,11 @@ class RouteDefinition
      */
     public function ChangeURI(string $uri): void
     {
-        $this->uri_definition = $uri;
-        $extracted_route      = self::ExtractRegexAndVariableNames($uri);
+        $this->uriDefinition = $uri;
+        $extractedRoute      = self::ExtractRegexAndVariableNames($uri);
 
-        $this->regex           = $extracted_route['regex'];
-        $this->regex_variables = $extracted_route['variable_names'];
+        $this->regex           = $extractedRoute['regex'];
+        $this->regexVariables = $extractedRoute['variableNames'];
     }
 
     /**
@@ -115,7 +115,7 @@ class RouteDefinition
     public function DefineMethod(string $method, callable $callback): void
     {
         if ($this->IsMethodDefined($method)) {
-            throw new ErrorException('Route ' . $method . ' \'' . $this->uri_definition . '\' is already defined');
+            throw new ErrorException('Route ' . $method . ' \'' . $this->uriDefinition . '\' is already defined');
         }
 
         $this->methods[$method] = $callback;
@@ -150,7 +150,7 @@ class RouteDefinition
     public function GetMethodCallback(string $method): callable
     {
         if (! $this->IsMethodDefined($method)) {
-            throw new ErrorException('Route \'' . $this->uri_definition . '\' has no method ' . $method . '');
+            throw new ErrorException('Route \'' . $this->uriDefinition . '\' has no method ' . $method . '');
         }
 
         return $this->methods[$method];
@@ -164,15 +164,15 @@ class RouteDefinition
      */
     public function GetVariables(string $uri): array
     {
-        $route_regex_groups = [];
-        if (! preg_match($this->regex, $uri, $route_regex_groups)) {
-            throw new ErrorException('URI \'' . $uri . '\' does not match with \'' . $this->uri_definition . '\'');
+        $routeRegexGroups = [];
+        if (! preg_match($this->regex, $uri, $routeRegexGroups)) {
+            throw new ErrorException('URI \'' . $uri . '\' does not match with \'' . $this->uriDefinition . '\'');
         }
 
         $variables = [];
-        for ($i = 1; $i < count($route_regex_groups); $i++) {
-            $name  = $this->regex_variables[$i - 1];
-            $value = $route_regex_groups[$i];
+        for ($i = 1; $i < count($routeRegexGroups); $i++) {
+            $name  = $this->regexVariables[$i - 1];
+            $value = $routeRegexGroups[$i];
 
             $variables[$name] = $value;
         }

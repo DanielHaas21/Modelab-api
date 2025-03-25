@@ -30,29 +30,29 @@ class Router
 
     /**
      * Dispatches request
-     * @param string $request_uri
+     * @param string $requestUri
      * @return void
      */
-    public function DispatchRequest(string $request_uri): void
+    public function DispatchRequest(string $requestUri): void
     {
         $response = new Response();
 
         try {
             $method           = $_SERVER['REQUEST_METHOD'];
-            $route_definition = $this->routes->FindMatchingRouteDefinition($request_uri);
+            $route_definition = $this->routes->FindMatchingRouteDefinition($requestUri);
 
             if ($route_definition == null) {
-                throw new RequestError(404, 'server', '\'' . $request_uri . '\' not found');
+                throw new RequestError(404, 'server', '\'' . $requestUri . '\' not found');
             }
 
             if (! $route_definition->IsMethodDefined($method)) {
-                throw new RequestError(405, 'server', 'Method ' . $method . ' not allowed for \'' . $request_uri . '\'');
+                throw new RequestError(405, 'server', 'Method ' . $method . ' not allowed for \'' . $requestUri . '\'');
             }
 
             $callback  = $route_definition->GetMethodCallback($method);
-            $variables = $route_definition->GetVariables($request_uri);
+            $variables = $route_definition->GetVariables($requestUri);
 
-            $request = new Request($request_uri, $variables);
+            $request = new Request($requestUri, $variables);
 
             foreach ($this->middleware as $middleware) {
                 $middleware($request, $response);
@@ -88,13 +88,13 @@ class Router
     /**
      * Adds routes:
      * route_prefix/routes
-     * @param string $route_prefix
+     * @param string $routePrefix
      * @param Routes $routes
      * @return void
      */
-    public function AddRoutes(string $route_prefix, Routes $routes): void
+    public function AddRoutes(string $routePrefix, Routes $routes): void
     {
-        $this->routes->AddRoutes($route_prefix, $routes);
+        $this->routes->AddRoutes($routePrefix, $routes);
     }
 
     /**
