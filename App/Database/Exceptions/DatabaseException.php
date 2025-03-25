@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Database;
+namespace App\Database\Exceptions;
 
 /**
- * Errors when managing the database
+ * Error to describe a generic database error
  */
-class DatabaseException extends \Exception
+class DatabaseException extends \Exception implements \Throwable
 {
     /**
      * Constructs the exception

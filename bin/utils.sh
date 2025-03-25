@@ -45,6 +45,6 @@ function run() {
     if [ $runStatus -ne 0 ]; then
         separator
         echo -e "$SCRIPT_NAME: ${RED}${BOLD}Failed${RESET}"
-        exit 0
+        exit $runStatus
     fi
 }

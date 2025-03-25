@@ -2,14 +2,15 @@
 
 namespace App\Database;
 
+use App\Database\Exceptions\SQLExecutionException;
+use Exception;
 use PDOException;
-
-require_once 'PDOtrait.php';
+use PDOStatement;
 
 /**
  * Library for elemental SQL functions
  *
- * @uses PDO::InitPDO() For PDO instance
+ * @uses PDOTrait::InitPDO() For PDO instance
  *
  * Naming conventions
  * - First word represent the type of CRUD function that is Select Insert Update Delete
@@ -19,53 +20,64 @@ require_once 'PDOtrait.php';
  * - Distinct
  *
  * Conditions
- * - When defining conditions use : placeholders for variables  for exmaple  test = :test \m
- * - Condition array pairs then look like this  [":test" => $test]
+ * - When defining conditions use : placeholders for variables for exmaple test = :test \m
+ * - Condition array pairs then look like this [":test" => $test]
  * @method InsertData omits this rule
  */
 class SQL
 {
-    use PDO;
+    use PDOTrait;
+
     /**
-     * MiscMissingTable checks whether a table exists in db
+     * Checks whether a table exists in db
      * @param string $table
      * @return bool|int 0 is returned if the command fails
      */
-    public static function MiscMissingTable(string $table)
+    public static function MiscTableExists(string $table)
     {
         self::InitPDO();
-        $sql_com = self::$pdo->prepare("SELECT TABLE_NAME FROM information_schema.tables WHERE table_schema = :dbName AND table_name = :tableName LIMIT 1");
 
-        if ($sql_com->execute(['dbName' => DB_CONFIG['database'], 'tableName' => $table])) {
+        $sql = "SELECT TABLE_NAME FROM information_schema.tables WHERE table_schema = :dbName AND table_name = :tableName LIMIT 1";
+        try {
+            $sql_com = self::$pdo->prepare($sql);
+            $sql_com->execute(['dbName' => DB_CONFIG['database'], 'tableName' => $table]);
+
             if ($sql_com->rowCount() === 0) {
                 return false;
             } else {
                 return true;
             }
-        } else {
-            return 0;
+        } catch (PDOException $e) {
+            throw new SQLExecutionException($sql, "Error while selecting data: " . $e->getMessage());
         }
     }
 
     /**
-     * Execute runs raw SQL code
+     * Runs raw SQL code
      * @param string $sql
      * @param ?array $params
-     * @return void
+     * @return \PDOStatement
      */
-    public static function Execute(string $sql, ?array $params = null): void
+    public static function Execute(string $sql, ?array $params = null): PDOStatement
     {
         self::InitPDO();
-        $sql_com = self::$pdo->prepare($sql);
-        if ($params == null) {
-            $sql_com->execute();
-        } else {
-            $sql_com->execute($params);
+
+        try {
+            $sql_com = self::$pdo->prepare($sql);
+            if ($params == null) {
+                $sql_com->execute();
+            } else {
+                $sql_com->execute($params);
+            }
+
+            return $sql_com;
+        } catch (PDOException $e) {
+            throw new SQLExecutionException($sql, "Error while executing sql: " . $e->getMessage());
         }
     }
 
     /**
-     * SelectTableCount returns count of logs in a table
+     * Returns count of logs in a table
      * @param string $countColumn
      * @param string $table
      * @return int
@@ -74,23 +86,21 @@ class SQL
     {
         self::InitPDO();
 
-        $count = "SELECT COUNT($countColumn) AS total_count FROM $table";
+        $sql = "SELECT COUNT($countColumn) AS total_count FROM $table";
 
         try {
-            $sql_com = self::$pdo->prepare($count);
+            $sql_com = self::$pdo->prepare($sql);
             $sql_com->execute();
 
-            $countResult = $sql_com->fetch(\PDO::FETCH_ASSOC)['total_count'];
-
-            return (int) $countResult;
+            $totalCount = $sql_com->fetch(\PDO::FETCH_ASSOC)['total_count'];
+            return (int) $totalCount;
         } catch (PDOException $e) {
-            echo "Error in counting rows: " . $e->getMessage();
-            return 0;
+            throw new SQLExecutionException($sql, "Error while counting rows: " . $e->getMessage());
         }
     }
 
     /**
-     * MiscIsDataInTable checks if a column contains any data in the $data array
+     * Checks if a column contains any data in the $data array
      * @param string $table
      * @param string $column
      * @param array $data
@@ -99,6 +109,7 @@ class SQL
     public static function MiscIsDataInTable(string $table, string $column, array $data): bool
     {
         self::InitPDO();
+
         $result = self::SelectDistinctDataWithInCondition($table, '*', $column, $data);
         if (count($result) > 0) {
             return true;
@@ -108,14 +119,15 @@ class SQL
     }
 
     /**
-     * SelectTableCountWithCondition returns a conditioned count of logs in a table
+     * Returns a conditioned count of logs in a table
      * @param string $table
      * @param string $countColumn
      * @param string $condition
      * @param array $params
-     * @return bool|int
+     * @throws SQLExecutionException
+     * @return int
      */
-    public static function SelectTableCountWithCondition(string $table, string $countColumn = "*", string $condition = "", array $params = [])
+    public static function SelectTableCountWithCondition(string $table, string $countColumn = "*", string $condition = "", array $params = []): int
     {
         self::InitPDO();
 
@@ -125,269 +137,301 @@ class SQL
         if (! empty($condition)) {
             $sql .= " WHERE $condition";
         }
-        $sql_com = self::$pdo->prepare($sql);
 
-        if ($sql_com === false) {
-            return false;
+        try {
+            $sql_com = self::$pdo->prepare($sql);
+
+            $sql_com->execute($params);
+            $count = (int) $sql_com->fetchColumn();
+
+            return $count;
+        } catch (PDOException $e) {
+            throw new SQLExecutionException($sql, "Error while selecting count with condition: " . $e->getMessage());
         }
-
-        $sql_com->execute($params);
-        $count = (int) $sql_com->fetchColumn();
-
-        return $count;
     }
 
     /**
-     * SelectData
      * @param string $table
      * @param string|array $something
-     * @return mixed
+     * @throws SQLExecutionException
+     * @return array
      */
-    public static function SelectData(string $table, $something): mixed
+    public static function SelectData(string $table, $something): array
     {
         self::InitPDO();
+
         $something = is_array($something) == true ? implode(", ", $something) : $something;
-        $sql       = "SELECT $something FROM $table";
-        $sql_com   = self::$pdo->prepare($sql);
-        $sql_com->execute();
-        $return = $sql_com->fetchAll(\PDO::FETCH_ASSOC);
-        return $return;
+        $sql = "SELECT $something FROM $table";
+
+        try {
+            $sql_com = self::$pdo->prepare($sql);
+            $sql_com->execute();
+
+            return $sql_com->fetchAll(\PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            throw new SQLExecutionException($sql, "Error while selecting data: " . $e->getMessage());
+        }
     }
 
     /**
-     * SelectDataDistinctData
      * @param mixed $table
      * @param mixed $something
-     * @return mixed
+     * @throws SQLExecutionException
+     * @return array
      */
-    public static function SelectDataDistinctData($table, $something): mixed
+    public static function SelectDataDistinctData($table, $something): array
     {
         self::InitPDO();
-        $sql     = "SELECT DISTINCT $something FROM $table";
-        $sql_com = self::$pdo->prepare($sql);
-        $sql_com->execute();
-        $return = $sql_com->fetchAll(\PDO::FETCH_ASSOC);
-        return $return;
+
+        $sql = "SELECT DISTINCT $something FROM $table";
+
+        try {
+            $sql_com = self::$pdo->prepare($sql);
+            $sql_com->execute();
+            $return = $sql_com->fetchAll(\PDO::FETCH_ASSOC);
+            return $return;
+        } catch (PDOException $e) {
+            throw new SQLExecutionException($sql, "Error while selecting distinct data: " . $e->getMessage());
+        }
     }
 
     /**
-     * SelectDistinctDataWithCondition
      * @param string $table
      * @param string|array $columns - multiple column selection is supported
      * @param string $condition
      * @param array $params
-     * @return mixed
+     * @throws SQLExecutionException
+     * @return array
      */
-    public static function SelectDistinctDataWithCondition(string $table, $columns, string $condition, array $params = []): mixed
+    public static function SelectDistinctDataWithCondition(string $table, $columns, string $condition, array $params = []): array
     {
         self::InitPDO();
+
         $columns = is_array($columns) == true ? implode(", ", $columns) : $columns;
-        $sql     = "SELECT DISTINCT $columns FROM $table WHERE $condition";
-        $sql_com = self::$pdo->prepare($sql);
+        $sql = "SELECT DISTINCT $columns FROM $table WHERE $condition";
 
-        if ($sql_com === false) {
-            return false;
+        try {
+            $sql_com = self::$pdo->prepare($sql);
+
+            foreach ($params as $paramName => $paramValue) {
+                $paramType = is_int($paramValue) ? \PDO::PARAM_INT : \PDO::PARAM_STR;
+                $sql_com->bindValue($paramName, $paramValue, $paramType);
+            }
+
+            $sql_com->execute();
+            $results = $sql_com->fetchAll(\PDO::FETCH_ASSOC);
+
+            return $results;
+        } catch (PDOException $e) {
+            throw new SQLExecutionException($sql, "Error while selecting distinct data with condition: " . $e->getMessage());
         }
-
-        foreach ($params as $paramName => $paramValue) {
-            $paramType = is_int($paramValue) ? \PDO::PARAM_INT : \PDO::PARAM_STR;
-            $sql_com->bindValue($paramName, $paramValue, $paramType);
-        }
-
-        $sql_com->execute();
-        $results = $sql_com->fetchAll(\PDO::FETCH_ASSOC);
-
-        return $results;
     }
+
     /**
-     * SelectDataWithCondition
      * @param string $table
      * @param string $columns
      * @param string $condition
      * @param array $params
-     * @return mixed
+     * @throws SQLExecutionException
+     * @return array
      */
-    public static function SelectDataWithCondition(string $table, string $columns, string $condition, array $params = []): mixed
+    public static function SelectDataWithCondition(string $table, string $columns, string $condition, array $params = []): array
     {
         self::InitPDO();
-        $sql     = "SELECT $columns FROM $table WHERE $condition";
-        $sql_com = self::$pdo->prepare($sql);
 
-        if ($sql_com === false) {
-            return false;
+        $sql = "SELECT $columns FROM $table WHERE $condition";
+
+        try {
+            $sql_com = self::$pdo->prepare($sql);
+
+
+
+            foreach ($params as $paramName => $paramValue) {
+                $paramType = is_int($paramValue) ? \PDO::PARAM_INT : \PDO::PARAM_STR;
+                $sql_com->bindValue($paramName, $paramValue, $paramType);
+            }
+
+            $sql_com->execute();
+            $results = $sql_com->fetchAll(\PDO::FETCH_ASSOC);
+
+            return $results;
+        } catch (PDOException $e) {
+            throw new SQLExecutionException($sql, "Error while selecting data with condition: " . $e->getMessage());
         }
-
-        foreach ($params as $paramName => $paramValue) {
-            $paramType = is_int($paramValue) ? \PDO::PARAM_INT : \PDO::PARAM_STR;
-            $sql_com->bindValue($paramName, $paramValue, $paramType);
-        }
-
-        $sql_com->execute();
-        $results = $sql_com->fetchAll(\PDO::FETCH_ASSOC);
-
-        return $results;
     }
 
     /**
-     * SelectDataInConditiniable  Selects data where in an array
+     * Selects data where in an array
      * @param string $table
      * @param string|array $columns
      * @param string $conditionColumn - refers to the column to which the data in the array is comapred to
      * @param array $paramArray
      * @param string|null $afterCondition
-     * @return mixed
+     * @throws SQLExecutionException
+     * @throws Exception
+     * @return array
      */
-    public static function SelectDataInConditiniable(string $table, $columns, string $conditionColumn, array $paramArray, $afterCondition = null): mixed
+    public static function SelectDataInConditiniable(string $table, $columns, string $conditionColumn, array $paramArray, $afterCondition = null): array
     {
         self::InitPDO();
+
         $columns = is_array($columns) == true ? implode(", ", $columns) : $columns;
         if (! is_array($paramArray) || empty($paramArray)) {
-            return false;
+            throw new Exception("ParamArray is either empty or not an array");
         }
 
         $inPlaceholder = implode(',', array_fill(0, count($paramArray), '?'));
-        $sql           = "SELECT $columns FROM $table WHERE $conditionColumn IN ($inPlaceholder) " . ($afterCondition == null ? '' : $afterCondition);
+        $sql = "SELECT $columns FROM $table WHERE $conditionColumn IN ($inPlaceholder) " . ($afterCondition == null ? '' : $afterCondition);
 
-        $sql_com = self::$pdo->prepare($sql);
+        try {
+            $sql_com = self::$pdo->prepare($sql);
 
-        if ($sql_com === false) {
-            return false;
+            $sql_com->execute($paramArray);
+            $results = $sql_com->fetchAll(\PDO::FETCH_ASSOC);
+
+            return $results;
+        } catch (PDOException $e) {
+            throw new SQLExecutionException($sql, "Error while selecting data in conditiniable: " . $e->getMessage());
         }
-
-        $sql_com->execute($paramArray);
-        $results = $sql_com->fetchAll(\PDO::FETCH_ASSOC);
-
-        return $results;
     }
+
     /**
-     * SelectDistinctDataWithInCondition
      * @param string $table
      * @param string $columns
      * @param string $conditionColumn
      * @param array $paramArray
      * @param string|null $afterCondition
-     * @return mixed
+     * @throws SQLExecutionException
+     * @return array
      */
-    protected static function SelectDistinctDataWithInCondition(string $table, string $columns, string $conditionColumn, array $paramArray, $afterCondition = null): mixed
+    protected static function SelectDistinctDataWithInCondition(string $table, string $columns, string $conditionColumn, array $paramArray, $afterCondition = null): array
     {
         self::InitPDO();
+
         if (! is_array($paramArray) || empty($paramArray)) {
-            return false;
+            throw new Exception("ParamArray is either empty or not an array");
         }
 
         $inPlaceholder = implode(',', array_fill(0, count($paramArray), '?'));
-
         $sql = "SELECT DISTINCT $columns FROM $table WHERE $conditionColumn IN ($inPlaceholder) " . ($afterCondition == null ? '' : $afterCondition);
 
-        $sql_com = self::$pdo->prepare($sql);
+        try {
+            $sql_com = self::$pdo->prepare($sql);
 
-        if ($sql_com === false) {
-            return false;
+
+
+            $sql_com->execute($paramArray);
+            $results = $sql_com->fetchAll(\PDO::FETCH_ASSOC);
+
+            return $results;
+        } catch (PDOException $e) {
+            throw new SQLExecutionException($sql, "Error while selecting distinct data with condition: " . $e->getMessage());
         }
-
-        $sql_com->execute($paramArray);
-        $results = $sql_com->fetchAll(\PDO::FETCH_ASSOC);
-
-        return $results;
     }
+
     /**
-     * InsertData
      * @param string $table
      * @param array $data
-     * @return mixed
+     * @throws SQLExecutionException
+     * @return int Last inserted id
      */
-    public static function InsertData(string $table, array $data = []): mixed
+    public static function InsertData(string $table, array $data = []): int
     {
         self::InitPDO();
+
         $columns = implode(', ', array_map(function ($column) {
             return "`$column`";
         }, array_keys($data)));
 
         $placeholders = ':' . implode(', :', array_keys($data));
 
-        $sql     = "INSERT IGNORE INTO $table ($columns) VALUES ($placeholders)";
-        $sql_com = self::$pdo->prepare($sql);
-        if ($sql_com === false) {
-            return false;
-        }
+        $sql = "INSERT IGNORE INTO $table ($columns) VALUES ($placeholders)";
 
-        $sql_com->execute($data);
-        return self::$pdo->lastInsertId();
+        try {
+            $sql_com = self::$pdo->prepare($sql);
+
+            $sql_com->execute($data);
+            return intval(self::$pdo->lastInsertId());
+        } catch (PDOException $e) {
+            throw new SQLExecutionException($sql, "Error while inserting data: " . $e->getMessage());
+        }
     }
+
     /**
-     * UpdateDataWithCondition
      * @param string $table
      * @param array $data
-     * @param array $definition - array of definitions for the condition
+     * @param array $definitions - array of definitions for the condition
      * @param string $condition
-     * @return mixed
+     * @throws SQLExecutionException
+     * @return int Affected rows
      */
-    public static function UpdateDataWithCondition(string $table, array $data = [], array $definition, string $condition): mixed
+    public static function UpdateDataWithCondition(string $table, array $data = [], array $definitions, string $condition): int
     {
         self::InitPDO();
-        $setClauses = [];
 
+        $setClauses = [];
         foreach ($data as $key => $value) {
-            $setClauses[] = "$key = :$value";
+            $setClauses[] = "$key = :$key";
         }
 
-        $data1 = array_merge($data, $definition);
+        $mergedData = array_merge($data, $definitions);
 
         $setClause = implode(', ', $setClauses);
 
         $sql = "UPDATE $table SET $setClause WHERE $condition";
 
-        $sql_com = self::$pdo->prepare($sql);
+        try {
+            $sql_com = self::$pdo->prepare($sql);
 
-        if ($sql_com === false) {
-            return false;
+            $sql_com->execute($mergedData);
+            return $sql_com->rowCount();
+        } catch (PDOException $e) {
+            throw new SQLExecutionException($sql, "Error while updating data with condition: " . $e->getMessage());
         }
-
-        $sql_com->execute($data1);
-        return $sql_com->rowCount();
     }
+
     /**
-     * DeleteDataWithCondition
      * @param string $table
      * @param string $condition
      * @param array $params
-     * @return mixed
+     * @throws SQLExecutionException
+     * @return int Affected rows
      */
-    public static function DeleteDataWithCondition(string $table, string $condition, array $params = []): mixed
+    public static function DeleteDataWithCondition(string $table, string $condition, array $params = []): int
     {
         self::InitPDO();
-        $sql     = "DELETE FROM $table WHERE $condition";
-        $sql_com = self::$pdo->prepare($sql);
 
-        if ($sql_com === false) {
-            return false;
+        $sql = "DELETE FROM $table WHERE $condition";
+
+        try {
+            $sql_com = self::$pdo->prepare($sql);
+
+            $sql_com->execute($params);
+
+            return $sql_com->rowCount();
+        } catch (PDOException $e) {
+            throw new SQLExecutionException($sql, "Error while deleting data with condition: " . $e->getMessage());
         }
-
-        $sql_com->execute($params);
-
-        $affectedRows = $sql_com->rowCount();
-
-        return $affectedRows;
     }
 
     /**
-     * DeleteData
      * @param string $table
-     * @return mixed
+     * @throws SQLExecutionException
+     * @return int Affected rows
      */
-    public static function DeleteData(string $table): mixed
+    public static function DeleteData(string $table): int
     {
         self::InitPDO();
-        $sql     = "DELETE FROM $table";
-        $sql_com = self::$pdo->prepare($sql);
 
-        if ($sql_com === false) {
-            return false;
+        $sql = "DELETE FROM $table";
+
+        try {
+            $sql_com = self::$pdo->prepare($sql);
+            $sql_com->execute();
+
+            return $sql_com->rowCount();
+        } catch (PDOException $e) {
+            throw new SQLExecutionException($sql, "Error while deleting data: " . $e->getMessage());
         }
-        $sql_com->execute();
-
-        $affectedRows = $sql_com->rowCount();
-
-        return $affectedRows;
     }
 }
