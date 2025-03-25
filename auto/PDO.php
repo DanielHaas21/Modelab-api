@@ -5,17 +5,8 @@
     !DO NOT INCLUDE IT ANYWHERE!
 */
 
+require_once __DIR__ . '/utils.php';
 require_once __DIR__ . '/../config/db.php';
-
-function echoLine(string $msg): void
-{
-    echo "$msg\n";
-}
-
-function echoError(Exception $e): void
-{
-    echoLine(get_class($e) . ": " . $e->getMessage());
-}
 
 $serverName = DB_CONFIG['servername'];
 $username   = DB_CONFIG['username'];
