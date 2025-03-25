@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Router;
 
 /**
@@ -6,7 +7,6 @@ namespace App\Router;
  */
 class Response
 {
-
     /**
      * Content type for text and HTML
      * @var string

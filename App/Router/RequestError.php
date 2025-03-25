@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Router;
 
 use Error;
@@ -8,7 +9,6 @@ use Error;
  */
 class RequestError extends Error
 {
-
     /**
      * Creates RequestError. All %key% in message are replaced with key
      * @param int $code

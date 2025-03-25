@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Router;
 
 /**
@@ -6,7 +7,6 @@ namespace App\Router;
  */
 class Request
 {
-
     /**
      * Merges data from $_POST and php://input
      * @return array

@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Router;
 
 use Throwable;
@@ -8,7 +9,6 @@ use Throwable;
  */
 class Router
 {
-
     /**
      * All route definitions
      * @var Routes
