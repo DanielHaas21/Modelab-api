@@ -46,18 +46,24 @@ class SQL
             return 0;
         }
     }
-    /*
-    Not sure if this will be used..
+
+    /**
+     * Execute runs raw SQL code
+     * @param string $sql
+     * @param ?array $params
+     * @return void
      */
-    public static function createTable($table, $specifications): void
+    public static function Execute(string $sql, ?array $params = null): void
     {
         self::InitPDO();
-        $new_table = "CREATE TABLE IF NOT EXISTS {$table}(
-            {$specifications}
-        );";
-        $sql_com = self::$pdo->prepare($new_table);
-        $sql_com->execute();
+        $sql_com = self::$pdo->prepare($sql);
+        if ($params == null) {
+            $sql_com->execute();
+        } else {
+            $sql_com->execute($params);
+        }
     }
+
     /**
      * SelectTableCount returns count of logs in a table
      * @param string $countColumn
