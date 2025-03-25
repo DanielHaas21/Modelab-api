@@ -1,5 +1,5 @@
 # Define paths to your shell scripts
-SH_PATH = App/database
+SH_PATH = auto
 MIGRATE_SCRIPT = $(SH_PATH)/tables.sh
 PDO_SCRIPT = $(SH_PATH)/db.sh
 BUILD_SCRIPT  = $(SH_PATH)/build.sh

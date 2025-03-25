@@ -14,7 +14,7 @@ IF "%1"=="create-db" (
     echo  ^| Executing script: db.bat        ^| 
     echo  -----------------------------------
 
-    call App/bin/db.bat
+    call bin/db.bat
     
     echo  -----------------------------------
     echo  ^|         Execution complete      ^| 
@@ -28,7 +28,7 @@ IF "%1"=="migrate" (
     echo  ^| Executing script: tables.bat    ^| 
     echo  -----------------------------------
     
-    call App/bin/tables.bat
+    call bin/tables.bat
 
     echo  -----------------------------------
     echo  ^|         Execution complete      ^| 
@@ -42,7 +42,7 @@ IF "%1"=="build" (
     echo  ^| Executing script: build.bat     ^| 
     echo  -----------------------------------
     
-    call App/bin/build.bat
+    call bin/build.bat
 
     echo  -----------------------------------
     echo  ^|         Execution complete      ^| 
