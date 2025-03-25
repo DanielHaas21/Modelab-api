@@ -4,7 +4,7 @@
     !DO NOT INCLUDE IT ANYWHERE!
 */
 
-require_once __DIR__ . '/../../config/db.php';
+require_once __DIR__ . '/../config/db.php';
 
 $DBservername = DB_CONFIG['servername'];
 $DBusername   = DB_CONFIG['username'];
@@ -31,5 +31,6 @@ try {
         echo "Database '$DBdatabase' already exists.  \n";
     }
 } catch (PDOException $e) {
-    echo "Error: " . $e->getMessage();
+    echo "Error: ".get_class($e)."\n";
+    echo $e->getMessage()."\n";
 }
