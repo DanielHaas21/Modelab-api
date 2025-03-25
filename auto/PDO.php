@@ -34,4 +34,5 @@ try {
 } catch (PDOException $e) {
     echo "Error: ".get_class($e)."\n";
     echo $e->getMessage()."\n";
+    exit(1);
 }
