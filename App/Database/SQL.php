@@ -58,7 +58,7 @@ class SQL
      * @param ?array $params
      * @return \PDOStatement
      */
-    public static function Execute(string $sql, ?array $params = null): PDOStatement
+    public static function MiscExecute(string $sql, ?array $params = null): PDOStatement
     {
         self::InitPDO();
 
