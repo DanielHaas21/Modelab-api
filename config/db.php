@@ -1,8 +1,8 @@
 <?php
 
 const DB_CONFIG = [
-    'servername' => 'localhost',
-    'username'   => 'root',
-    'password'   => '',
+    'servername' => '127.0.0.1',
+    'username'   => 'modelab_user',
+    'password'   => 'password',
     'database'   => 'modelab_api',
 ];

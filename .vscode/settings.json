@@ -1,0 +1,7 @@
+{
+    "php-cs-fixer.executablePath": "${workspaceFolder}/.vscode/php-cs-fixer.phar",
+    "[php]": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "junstyle.php-cs-fixer"
+    },
+}
