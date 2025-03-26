@@ -68,23 +68,10 @@ echoLine();
 echoLine("Checking Models...");
 foreach ($modelClasses as $modelClass) {
     echoLine("Checking Model $modelClass...");
-
-    $tableName = $modelClass::GetTableName();
-    $differences = $modelClass::CompareColumns();
-
-    if (count($differences) > 0) {
-        echoLine("Different columns:");
-        foreach ($differences as $column => $difference) {
-            $reason = $difference['reason'];
-            $dbValue = $difference['dbValue'];
-            $modelValue = $difference['modelValue'];
-
-            echoLine("  $column:");
-            echoLine("    reason : $reason");
-            echoLine("    db     : $dbValue");
-            echoLine("    model  : $modelValue");
-        }
-
+    try {
+        $differences = $modelClass::Init();
+    } catch (SQLExecutionException $e) {
+        echoError($e);
         echoLine("Checking Model $modelClass Failed");
         echoLine("Checking Models Failed");
         exit(1);

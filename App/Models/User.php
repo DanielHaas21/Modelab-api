@@ -10,8 +10,7 @@ use App\Database\BaseModel;
 class User extends BaseModel
 {
     /**
-     * @sqlType VARCHAR(512)
-     * @sql NOT NULL
+     * @sql VARCHAR(512) NOT NULL
      * @var string
      */
     public $email;
