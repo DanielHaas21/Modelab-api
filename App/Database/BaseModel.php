@@ -291,4 +291,14 @@ abstract class BaseModel
         SQL::UpdateDataWithCondition(static::GetTableName(), $data, [], "id = :id");
     }
 
+    /**
+     * Deletes the DB row based on the id
+     * @return void
+     */
+    final public function Delete(): void
+    {
+        $data = $this->GetData();
+        SQL::DeleteDataWithCondition(static::GetTableName(), "id = :id", $data);
+    }
+
 }
