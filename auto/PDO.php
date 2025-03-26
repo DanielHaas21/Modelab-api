@@ -8,7 +8,7 @@
 use App\Database\Exceptions\DatabaseException;
 use App\Database\Exceptions\SQLExecutionException;
 use App\Database\SQL;
-use App\Models\User;
+use App\Models\Category;
 
 require_once __DIR__ . '/../autoload.php';
 require_once __DIR__ . '/../config/db.php';
@@ -23,7 +23,7 @@ function echoError(Exception $e): void
     echoLine(get_class($e) . ": " . $e->getMessage());
 }
 
-$modelClasses = [User::class];
+$modelClasses = [Category::class];
 
 // Check PDO
 
