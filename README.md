@@ -56,8 +56,9 @@ App folder structure
 ├───config
 │   ├───someconfig.php - actual config file
 │   └───someconfig.example.php - config file template
-├───auto
+├───auto - Scripts call only from build scripts
 ├───bin - .bat and .bash build scripts
+├───routes - Defined routes, include only from index.php
 ├───autoload.php - Autoloader of classes
 ├───index.php - Entrypoint of the api
 ├───modelab.cmd - Interface for executing .bat scripts

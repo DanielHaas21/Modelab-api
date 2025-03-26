@@ -2,21 +2,14 @@
 
 namespace App\Models;
 
-use App\Database\BaseModel;
-
 /**
  * Model of a User from Google OAuth
  */
-class User extends BaseModel
+class User
 {
-    /**
-     * @sql VARCHAR(512) NOT NULL
-     * @var string
-     */
     public $email;
-
-    // public $givenName;
-    // public $familyName;
-    // public $picture;
-    // public $userMetaId;
+    public $givenName;
+    public $familyName;
+    public $picture;
+    public $userMetaId;
 }

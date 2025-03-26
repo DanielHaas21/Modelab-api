@@ -8,6 +8,8 @@ use App\Router\Router;
 
 $router = new Router();
 
+require_once __DIR__ . '/routes/categoryRoutes.php';
+
 $router->AddGET('/', function (Request $req, Response $res): void {
     $res->SetText("Modellab API");
 });

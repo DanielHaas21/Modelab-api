@@ -2,8 +2,13 @@
 
 namespace App\Models;
 
-class Category
+use App\Database\BaseModel;
+
+class Category extends BaseModel
 {
-    public $id;
+    /**
+     * @sql VARCHAR(64) NOT NULL
+     * @var string
+     */
     public $name;
 }

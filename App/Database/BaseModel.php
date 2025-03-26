@@ -197,6 +197,42 @@ abstract class BaseModel
     }
 
     /**
+     * Select datas from DB with where, creates models
+     * @param string $condition
+     * @param array $params
+     * @return object[]
+     */
+    final public static function SelectWhere(string $condition, array $params): array
+    {
+        static::CheckNotBase();
+        static::Init();
+
+        $datas = SQL::SelectDataWithCondition(static::GetTableName(), '*', $condition, $params);
+        $models = array_map(function ($data) {
+            return static::CreateFrom($data);
+        }, $datas);
+
+        return $models;
+    }
+
+    /**
+     * Select all datas from DB, creates models
+     * @return object[]
+     */
+    final public static function SelectAll(): array
+    {
+        static::CheckNotBase();
+        static::Init();
+
+        $datas = SQL::SelectData(static::GetTableName(), '*');
+        $models = array_map(function ($data) {
+            return static::CreateFrom($data);
+        }, $datas);
+
+        return $models;
+    }
+
+    /**
      * Inserts data into DB
      * @param array $data
      * @return int Inserted row ID
