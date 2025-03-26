@@ -76,35 +76,6 @@ abstract class BaseModel
         return end($className);
     }
 
-    /**
-     * Creates the model table, if it doesn't exist
-     * <br>Shouldn't be called from the base class
-     * @return void
-     */
-    final public static function Init(): void
-    {
-        static::CheckNotBase();
-
-        if (SQL::MiscTableExists(static::GetTableName())) {
-            return;
-        }
-
-        $sqlProperties = static::GetSQLProperties();
-
-        $columns = array_map(
-            function ($property): string {
-                return '`' . $property['field'] . '` ' . $property['type'] . ' ' . $property['sql'];
-            },
-            $sqlProperties
-        );
-
-        $columnDefinitions = implode(',', $columns);
-        $tableName = static::GetTableName();
-        $sql = "CREATE TABLE `$tableName` (
-            $columnDefinitions
-        )";
-        SQL::MiscExecute($sql);
-    }
 
     /**
      * Creates an instance of the model and sets data
@@ -141,7 +112,71 @@ abstract class BaseModel
     }
 
     /**
+     * Creates the model table, if it doesn't exist
+     * <br>Shouldn't be called from the base class
+     * @return void
+     */
+    final public static function Init(): void
+    {
+        static::CheckNotBase();
+
+        if (SQL::MiscTableExists(static::GetTableName())) {
+            return;
+        }
+
+        $sqlProperties = static::GetSQLProperties();
+
+        $columns = array_map(
+            function ($property): string {
+                return '`' . $property['field'] . '` ' . $property['type'] . ' ' . $property['sql'];
+            },
+            $sqlProperties
+        );
+
+        $columnDefinitions = implode(',', $columns);
+        $tableName = static::GetTableName();
+        $sql = "CREATE TABLE `$tableName` (
+            $columnDefinitions
+        )";
+        SQL::MiscExecute($sql);
+    }
+
+    /**
+     * Drops the model table, if it exists
+     * <br>Shouldn't be called from the base class
+     * @return void
+     */
+    final public static function Drop(): void
+    {
+        static::CheckNotBase();
+
+        if (!SQL::MiscTableExists(static::GetTableName())) {
+            return;
+        }
+
+        $tableName = static::GetTableName();
+        $sql = "DROP TABLE `$tableName`";
+        SQL::MiscExecute($sql);
+    }
+
+    /**
+     * Truncates the model table
+     * <br>Shouldn't be called from the base class
+     * @return void
+     */
+    final public static function Truncate(): void
+    {
+        static::CheckNotBase();
+        static::Init();
+
+        $tableName = static::GetTableName();
+        $sql = "TRUNCATE TABLE `$tableName`";
+        SQL::MiscExecute($sql);
+    }
+
+    /**
      * Selects data from DB and creates the model, if found
+     * <br>Shouldn't be called from the base class
      * @param int $id
      * @return object|null
      */
@@ -162,6 +197,17 @@ abstract class BaseModel
     }
 
     /**
+     * Inserts data into DB
+     * @param array $data
+     * @return int Inserted row ID
+     */
+    final public static function Insert(array $data): int
+    {
+        unset($data['id']);
+        return SQL::InsertData(static::GetTableName(), $data);
+    }
+
+    /**
      * Default in every model
      * @sql INT NOT NULL AUTO_INCREMENT PRIMARY KEY
      * @var int
@@ -174,6 +220,26 @@ abstract class BaseModel
     public function __construct()
     {
         static::Init();
+    }
+
+    /**
+     * Updates the DB row based on the id
+     * @return void
+     */
+    final public function Update(): void
+    {
+        $data = $this->GetData();
+        SQL::UpdateDataWithCondition(static::GetTableName(), $data, [], "id = :id");
+    }
+
+    /**
+     * Deletes the DB row based on the id
+     * @return void
+     */
+    final public function Delete(): void
+    {
+        $data = $this->GetData();
+        SQL::DeleteDataWithCondition(static::GetTableName(), "id = :id", $data);
     }
 
     /**
@@ -200,26 +266,6 @@ abstract class BaseModel
         }
 
         return $data;
-    }
-
-    /**
-     * Updates the DB row based on the id
-     * @return void
-     */
-    final public function Update(): void
-    {
-        $data = $this->GetData();
-        SQL::UpdateDataWithCondition(static::GetTableName(), $data, [], "id = :id");
-    }
-
-    /**
-     * Deletes the DB row based on the id
-     * @return void
-     */
-    final public function Delete(): void
-    {
-        $data = $this->GetData();
-        SQL::DeleteDataWithCondition(static::GetTableName(), "id = :id", $data);
     }
 
 }
