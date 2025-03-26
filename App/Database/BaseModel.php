@@ -128,7 +128,7 @@ abstract class BaseModel
 
         $columns = array_map(
             function ($property): string {
-                return '`' . $property['field'] . '` ' . $property['type'] . ' ' . $property['sql'];
+                return '`' . $property['field'] . '` ' . $property['sql'];
             },
             $sqlProperties
         );
@@ -203,6 +203,8 @@ abstract class BaseModel
      */
     final public static function Insert(array $data): int
     {
+        static::Init();
+
         unset($data['id']);
         return SQL::InsertData(static::GetTableName(), $data);
     }
@@ -238,8 +240,9 @@ abstract class BaseModel
      */
     final public function Delete(): void
     {
-        $data = $this->GetData();
-        SQL::DeleteDataWithCondition(static::GetTableName(), "id = :id", $data);
+        SQL::DeleteDataWithCondition(static::GetTableName(), "id = :id", [
+            ':id' => $this->id
+        ]);
     }
 
     /**

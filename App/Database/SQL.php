@@ -21,12 +21,26 @@ use PDOStatement;
  *
  * Conditions
  * - When defining conditions use : placeholders for variables for exmaple test = :test \m
- * - Condition array pairs then look like this [":test" => $test]
- * @method InsertData omits this rule
+ * - Params array: [":test" => $test]
+ * - Data array: ["test" => $test]
  */
 class SQL
 {
     use PDOTrait;
+
+    /**
+     * Generates sql clauses and parameters used in PDO commands
+     * @param array<string, string> $data
+     * @return array<string, string>
+     */
+    private static function GenerateParams(array $data): array
+    {
+        $params = [];
+        foreach ($data as $key => $value) {
+            $params[":$key"] = $value;
+        }
+        return $params;
+    }
 
     /**
      * Checks whether a table exists in db
@@ -55,7 +69,7 @@ class SQL
     /**
      * Runs raw SQL code
      * @param string $sql
-     * @param ?array $params
+     * @param ?array $params Raw parameters, use [":key" => "value"]
      * @return \PDOStatement
      */
     public static function MiscExecute(string $sql, ?array $params = null): PDOStatement
@@ -103,14 +117,14 @@ class SQL
      * Checks if a column contains any data in the $data array
      * @param string $table
      * @param string $column
-     * @param array $data
+     * @param array $params
      * @return bool
      */
-    public static function MiscIsDataInTable(string $table, string $column, array $data): bool
+    public static function MiscIsDataInTable(string $table, string $column, array $params): bool
     {
         self::InitPDO();
 
-        $result = self::SelectDistinctDataWithInCondition($table, '*', $column, $data);
+        $result = self::SelectDistinctDataWithInCondition($table, '*', $column, $params);
         if (count($result) > 0) {
             return true;
         } else {
@@ -244,8 +258,6 @@ class SQL
         try {
             $sql_com = self::$pdo->prepare($sql);
 
-
-
             foreach ($params as $paramName => $paramValue) {
                 $paramType = is_int($paramValue) ? \PDO::PARAM_INT : \PDO::PARAM_STR;
                 $sql_com->bindValue($paramName, $paramValue, $paramType);
@@ -265,28 +277,28 @@ class SQL
      * @param string $table
      * @param string|array $columns
      * @param string $conditionColumn - refers to the column to which the data in the array is comapred to
-     * @param array $paramArray
+     * @param array $params
      * @param string|null $afterCondition
      * @throws SQLExecutionException
      * @throws Exception
      * @return array
      */
-    public static function SelectDataInConditiniable(string $table, $columns, string $conditionColumn, array $paramArray, $afterCondition = null): array
+    public static function SelectDataInConditiniable(string $table, $columns, string $conditionColumn, array $params, $afterCondition = null): array
     {
         self::InitPDO();
 
         $columns = is_array($columns) == true ? implode(", ", $columns) : $columns;
-        if (! is_array($paramArray) || empty($paramArray)) {
+        if (! is_array($params) || empty($params)) {
             throw new Exception("ParamArray is either empty or not an array");
         }
 
-        $inPlaceholder = implode(',', array_fill(0, count($paramArray), '?'));
+        $inPlaceholder = implode(',', array_fill(0, count($params), '?'));
         $sql = "SELECT $columns FROM $table WHERE $conditionColumn IN ($inPlaceholder) " . ($afterCondition == null ? '' : $afterCondition);
 
         try {
             $sql_com = self::$pdo->prepare($sql);
 
-            $sql_com->execute($paramArray);
+            $sql_com->execute($params);
             $results = $sql_com->fetchAll(\PDO::FETCH_ASSOC);
 
             return $results;
@@ -299,28 +311,26 @@ class SQL
      * @param string $table
      * @param string $columns
      * @param string $conditionColumn
-     * @param array $paramArray
+     * @param array $params
      * @param string|null $afterCondition
      * @throws SQLExecutionException
      * @return array
      */
-    protected static function SelectDistinctDataWithInCondition(string $table, string $columns, string $conditionColumn, array $paramArray, $afterCondition = null): array
+    protected static function SelectDistinctDataWithInCondition(string $table, string $columns, string $conditionColumn, array $params, $afterCondition = null): array
     {
         self::InitPDO();
 
-        if (! is_array($paramArray) || empty($paramArray)) {
+        if (! is_array($params) || empty($params)) {
             throw new Exception("ParamArray is either empty or not an array");
         }
 
-        $inPlaceholder = implode(',', array_fill(0, count($paramArray), '?'));
+        $inPlaceholder = implode(',', array_fill(0, count($params), '?'));
         $sql = "SELECT DISTINCT $columns FROM $table WHERE $conditionColumn IN ($inPlaceholder) " . ($afterCondition == null ? '' : $afterCondition);
 
         try {
             $sql_com = self::$pdo->prepare($sql);
 
-
-
-            $sql_com->execute($paramArray);
+            $sql_com->execute($params);
             $results = $sql_com->fetchAll(\PDO::FETCH_ASSOC);
 
             return $results;
@@ -339,18 +349,19 @@ class SQL
     {
         self::InitPDO();
 
+        $params = self::GenerateParams($data);
+
         $columns = implode(', ', array_map(function ($column) {
             return "`$column`";
         }, array_keys($data)));
 
-        $placeholders = ':' . implode(', :', array_keys($data));
+        $placeholders = implode(', ', array_keys($params));
 
         $sql = "INSERT IGNORE INTO $table ($columns) VALUES ($placeholders)";
-
         try {
             $sql_com = self::$pdo->prepare($sql);
 
-            $sql_com->execute($data);
+            $sql_com->execute($params);
             return intval(self::$pdo->lastInsertId());
         } catch (PDOException $e) {
             throw new SQLExecutionException($sql, "Error while inserting data: " . $e->getMessage());
@@ -360,21 +371,21 @@ class SQL
     /**
      * @param string $table
      * @param array $data
-     * @param array $definitions - array of definitions for the condition
+     * @param array $params - array of definitions for the condition
      * @param string $condition
      * @throws SQLExecutionException
      * @return int Affected rows
      */
-    public static function UpdateDataWithCondition(string $table, array $data = [], array $definitions, string $condition): int
+    public static function UpdateDataWithCondition(string $table, array $data = [], array $params, string $condition): int
     {
         self::InitPDO();
+
+        $params = array_merge(self::GenerateParams($data), $params);
 
         $setClauses = [];
         foreach ($data as $key => $value) {
             $setClauses[] = "$key = :$key";
         }
-
-        $mergedData = array_merge($data, $definitions);
 
         $setClause = implode(', ', $setClauses);
 
@@ -383,7 +394,7 @@ class SQL
         try {
             $sql_com = self::$pdo->prepare($sql);
 
-            $sql_com->execute($mergedData);
+            $sql_com->execute($params);
             return $sql_com->rowCount();
         } catch (PDOException $e) {
             throw new SQLExecutionException($sql, "Error while updating data with condition: " . $e->getMessage());
