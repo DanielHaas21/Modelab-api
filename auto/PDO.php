@@ -43,14 +43,14 @@ $database = DB_CONFIG['database'];
 echoLine();
 echoLine("Checking DB '$database'...");
 try {
-    $sql_com = SQL::Execute(
+    $sql_com = SQL::MiscExecute(
         "SELECT COUNT(*) FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = :dbname",
         [':dbname' => $database]
     );
     $databaseExists = $sql_com->fetchColumn() == 0;
 
     if ($databaseExists) {
-        SQL::Execute("CREATE DATABASE `$database`");
+        SQL::MiscExecute("CREATE DATABASE `$database`");
         echoLine("DB was created.");
     } else {
         echoLine("DB already exists.");

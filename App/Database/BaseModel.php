@@ -62,7 +62,7 @@ abstract class BaseModel
         $differences = [];
 
         $sql = 'SHOW COLUMNS FROM  `' . static::GetTableName() . '`';
-        $columnsData = SQL::Execute($sql)->fetchAll(\PDO::FETCH_ASSOC);
+        $columnsData = SQL::MiscExecute($sql)->fetchAll(\PDO::FETCH_ASSOC);
 
         $sqlProperties = static::GetSQLProperties();
 
@@ -181,7 +181,7 @@ abstract class BaseModel
         $sql = "CREATE TABLE `$tableName` (
             $columnDefinitions
         )";
-        SQL::Execute($sql);
+        SQL::MiscExecute($sql);
     }
 
     /**
