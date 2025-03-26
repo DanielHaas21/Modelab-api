@@ -9,8 +9,8 @@ use App\Database\SQL;
  * Abstract class of a model that defines a database table
  *
  * use @sql in PHPDoc above a field to define it as a column:
- * <br>\/**
- * <br> \* @sql INT NOT NULL PRIMARY KEY
+ * <br>\/**@sqlType INT
+ * <br> \* @sql NOT NULL PRIMARY KEY
  * <br>*\/
  * <br>public $id;
  */
