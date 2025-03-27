@@ -16,9 +16,18 @@ class CategoryController
     public static function GetAllCategories(): callable
     {
         return function (Request $req, Response $res): void {
-            $categories = Category::SelectAll();
+            /**
+             * @var Category[]
+             */
+            $categories = Category::SelectAllModels();
 
-            $res->SetText(var_export($categories, true));
+            $categoryData = array_map(function ($category) {
+                return $category->GetData();
+            }, $categories);
+
+            $res->SetJSON([
+                'categories' => $categoryData
+            ]);
         };
     }
 
@@ -42,11 +51,48 @@ class CategoryController
                 throw RequestError::CreateFieldError(400, 'name', '%key% can\'t be longer than 64 chars');
             }
 
-            $insertedId = Category::Insert(['name' => $name]);
+            $category = new Category();
+            $category->name = $name;
+
+            $insertedId = Category::InsertModel($category);
 
             $res->SetJSON([
                 'message' => 'Category created',
                 'id' => $insertedId
+            ]);
+        };
+    }
+
+    /**
+     * Creates category
+     * @return (callable(Request, Response):void)
+     */
+    public static function DeleteCategory(): callable
+    {
+        return function (Request $req, Response $res): void {
+            $variables = $req->GetVariables();
+
+            if (! isset($variables['id'])) {
+                throw RequestError::CreateFieldError(400, 'id', '%key% is required');
+            }
+            $id = $variables['id'];
+
+            if (! is_numeric($id)) {
+                throw RequestError::CreateFieldError(400, 'id', '%key% is not numeric');
+            }
+            $id = intval($id);
+
+            $category = Category::SelectModel($id);
+
+            if ($category == null) {
+                throw RequestError::CreateFieldError(404, 'id', 'category with %key%: \'' . $id . '\' doesn\'t exist');
+            }
+
+            $category->Delete();
+
+            $res->SetJSON([
+                'message' => 'Category deleted',
+                'id' => $id
             ]);
         };
     }

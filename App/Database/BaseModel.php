@@ -6,12 +6,18 @@ use App\Database\Exceptions\DatabaseException;
 use App\Database\SQL;
 
 /**
- * Abstract class of a model that defines a database table
+ * Abstract base class of a model that defines a database table.
  *
- * use @sql in PHPDoc above a field to define it as a column:
- * <br> \* @sql INT NOT NULL PRIMARY KEY
- * <br>*\/
- * <br>public $id;
+ * The model static class implements basic CRUD operations.
+ * Each model instance CRUD operations uses the static methods.
+ *
+ * Model uses INT ID as a primary key.
+ *
+ * Use:
+ * - @sql in PHPDoc above a field to define it as a column:
+ *
+ * /* @sql INT NOT NULL PRIMARY KEY *\/
+ * public $id;
  */
 abstract class BaseModel
 {
@@ -29,9 +35,10 @@ abstract class BaseModel
 
     /**
      * Gets the columns defined in the class
-     * <br>Shouldn't be called from the base class
+     *
+     * Shouldn't be called from the base class
      * @throws DatabaseException
-     * @return array{name: string, sql: string}
+     * @return array{type: string, field: string, sql: string}
      */
     final public static function GetSQLProperties(): array
     {
@@ -54,9 +61,11 @@ abstract class BaseModel
                 continue;
             }
 
+            $sql = $sqlMatches[1];
             $sqlProperties[] = [
                 'field' => $property->getName(),
-                'sql' => $sqlMatches[1],
+                'sql' => $sql,
+                'type' => SQLUtils::GetTypeFromCreateSQL($sql)
             ];
         }
 
@@ -65,7 +74,8 @@ abstract class BaseModel
 
     /**
      * Gets the name of the table (same as class name)
-     * <br>Shouldn't be called from the base class
+     *
+     * Shouldn't be called from the base class
      * @return string
      */
     final public static function GetTableName(): string
@@ -79,7 +89,8 @@ abstract class BaseModel
 
     /**
      * Creates an instance of the model and sets data
-     * <br>Shouldn't be called from the base class
+     *
+     * Shouldn't be called from the base class
      * @param array $data ["column" => "value"]
      * @throws DatabaseException
      * @return object
@@ -113,7 +124,8 @@ abstract class BaseModel
 
     /**
      * Creates the model table, if it doesn't exist
-     * <br>Shouldn't be called from the base class
+     *
+     * Shouldn't be called from the base class
      * @return void
      */
     final public static function Init(): void
@@ -143,7 +155,8 @@ abstract class BaseModel
 
     /**
      * Drops the model table, if it exists
-     * <br>Shouldn't be called from the base class
+     *
+     * Shouldn't be called from the base class
      * @return void
      */
     final public static function Drop(): void
@@ -161,7 +174,8 @@ abstract class BaseModel
 
     /**
      * Truncates the model table
-     * <br>Shouldn't be called from the base class
+     *
+     * Shouldn't be called from the base class
      * @return void
      */
     final public static function Truncate(): void
@@ -176,11 +190,12 @@ abstract class BaseModel
 
     /**
      * Selects data from DB and creates the model, if found
-     * <br>Shouldn't be called from the base class
+     *
+     * Shouldn't be called from the base class
      * @param int $id
      * @return object|null
      */
-    final public static function Select(int $id): ?object
+    final public static function SelectModel(int $id): ?object
     {
         static::CheckNotBase();
         static::Init();
@@ -198,11 +213,13 @@ abstract class BaseModel
 
     /**
      * Select datas from DB with where, creates models
+     *
+     * Shouldn't be called from the base class
      * @param string $condition
      * @param array $params
      * @return object[]
      */
-    final public static function SelectWhere(string $condition, array $params): array
+    final public static function SelectWhereModels(string $condition, array $params): array
     {
         static::CheckNotBase();
         static::Init();
@@ -217,9 +234,11 @@ abstract class BaseModel
 
     /**
      * Select all datas from DB, creates models
+     *
+     * Shouldn't be called from the base class
      * @return object[]
      */
-    final public static function SelectAll(): array
+    final public static function SelectAllModels(): array
     {
         static::CheckNotBase();
         static::Init();
@@ -234,15 +253,56 @@ abstract class BaseModel
 
     /**
      * Inserts data into DB
-     * @param array $data
+     *
+     * Shouldn't be called from the base class
+     * @param BaseModel $model
      * @return int Inserted row ID
      */
-    final public static function Insert(array $data): int
+    final public static function InsertModel(BaseModel $model): int
     {
+        static::CheckNotBase();
         static::Init();
 
+        $data = $model->GetDataRaw();
         unset($data['id']);
         return SQL::InsertData(static::GetTableName(), $data);
+    }
+
+    /**
+     * Updates data in DB
+     *
+     * Shouldn't be called from the base class
+     * @param BaseModel $model
+     * @return void
+     */
+    final public static function UpdateModel(BaseModel $model): void
+    {
+        static::CheckNotBase();
+        static::Init();
+
+        $data = $model->GetDataRaw();
+        SQL::UpdateDataWithCondition(static::GetTableName(), $data, [
+            ':id' => $model->id
+        ], "id = :id");
+    }
+
+    /**
+     * Deletes data from DB
+     *
+     * Shouldn't be called from the base class
+     * @param BaseModel $model
+     * @return bool Whether the model was deleted
+     */
+    final public static function DeleteModel(BaseModel $model): int
+    {
+        static::CheckNotBase();
+        static::Init();
+
+        $affectedRows = SQL::DeleteDataWithCondition(static::GetTableName(), "id = :id", [
+            ':id' => $model->id
+        ]);
+
+        return $affectedRows != 0;
     }
 
     /**
@@ -261,28 +321,62 @@ abstract class BaseModel
     }
 
     /**
-     * Updates the DB row based on the id
+     * Inserts into the DB
+     * @return void
+     */
+    final public function Insert(): void
+    {
+        static::InsertModel($this);
+    }
+
+    /**
+     * Updates the DB row based on id
      * @return void
      */
     final public function Update(): void
     {
-        $data = $this->GetData();
-        SQL::UpdateDataWithCondition(static::GetTableName(), $data, [], "id = :id");
+        static::UpdateModel($this);
     }
 
     /**
-     * Deletes the DB row based on the id
+     * Deletes from the DB based on id
      * @return void
      */
     final public function Delete(): void
     {
-        SQL::DeleteDataWithCondition(static::GetTableName(), "id = :id", [
-            ':id' => $this->id
-        ]);
+        static::DeleteModel($this);
     }
 
     /**
-     * Constructs the data array from the model
+     * Constructs an array of data from the model as is
+     * @throws DatabaseException
+     * @return array ["column" => "value"]
+     */
+    final public function GetDataRaw(): array
+    {
+        $sqlProperties = static::GetSQLProperties();
+        $reflectionClass = new \ReflectionClass(get_called_class());
+
+        $data = [];
+
+        foreach ($sqlProperties as $property) {
+            $name = $property['field'];
+
+            if (!$reflectionClass->hasProperty($name)) {
+                throw new DatabaseException("Missing property in class: $name");
+            }
+
+            $reflectionProperty = $reflectionClass->getProperty($name);
+            $value = strval($reflectionProperty->getValue($this));
+
+            $data[$name] = $value;
+        }
+
+        return $data;
+    }
+
+    /**
+     * Constructs JSON ready data from the model
      * @throws DatabaseException
      * @return array ["column" => "value"]
      */
@@ -301,7 +395,10 @@ abstract class BaseModel
             }
 
             $reflectionProperty = $reflectionClass->getProperty($name);
-            $data[$name] = $reflectionProperty->getValue($this);
+            $value = strval($reflectionProperty->getValue($this));
+
+            $type = $property['type'];
+            $data[$name] = SQLUtils::CastFromSQLType($value, $type);
         }
 
         return $data;
