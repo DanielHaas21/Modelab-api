@@ -1,9 +1,10 @@
 <?php
 
-namespace App\Database;
+namespace App\Database\BaseModels;
 
 use App\Database\Exceptions\DatabaseException;
 use App\Database\SQL;
+use App\Database\SQLUtils;
 
 /**
  * Abstract base class of a model that defines a database table.
@@ -26,7 +27,7 @@ abstract class BaseModel
      * @throws DatabaseException
      * @return void
      */
-    private static function CheckNotBase(): void
+    final protected static function CheckNotBase(): void
     {
         if (get_called_class() == BaseModel::class) {
             throw new DatabaseException('Don\'t call methods from the base class');
@@ -189,29 +190,6 @@ abstract class BaseModel
     }
 
     /**
-     * Selects data from DB and creates the model, if found
-     *
-     * Shouldn't be called from the base class
-     * @param int $id
-     * @return object|null
-     */
-    final public static function SelectModel(int $id): ?object
-    {
-        static::CheckNotBase();
-        static::Init();
-
-        $datas = SQL::SelectDataWithCondition(static::GetTableName(), '*', 'id = :id', [
-            ':id' => $id
-        ]);
-
-        if (count($datas) == 0) {
-            return null;
-        }
-
-        return static::CreateFrom($datas[0]);
-    }
-
-    /**
      * Select datas from DB with where, creates models
      *
      * Shouldn't be called from the base class
@@ -243,7 +221,37 @@ abstract class BaseModel
         static::CheckNotBase();
         static::Init();
 
-        $datas = SQL::SelectData(static::GetTableName(), '*');
+        $datas = SQL::SelectData(
+            static::GetTableName(),
+            '*'
+        );
+        $models = array_map(function ($data) {
+            return static::CreateFrom($data);
+        }, $datas);
+
+        return $models;
+    }
+
+    /**
+     * Select all datas from DB, creates models
+     *
+     * Shouldn't be called from the base class
+     * @return object[]
+     */
+    final public static function SelectAllModelsLimited(int $count, int $offset): array
+    {
+        static::CheckNotBase();
+        static::Init();
+
+        $datas = SQL::SelectDataWithCondition(
+            static::GetTableName(),
+            '*',
+            'LIMIT :p_count OFFSET :p_offset',
+            [
+            ':p_count' => max(0, $count),
+            ':p_offset' => max(0, $offset),
+        ]
+        );
         $models = array_map(function ($data) {
             return static::CreateFrom($data);
         }, $datas);
@@ -255,62 +263,19 @@ abstract class BaseModel
      * Inserts data into DB
      *
      * Shouldn't be called from the base class
-     * @param BaseModel $model
+     * @param BaseModelId $model
      * @return int Inserted row ID
      */
-    final public static function InsertModel(BaseModel $model): int
+    public static function InsertModel(BaseModel $model): int
     {
         static::CheckNotBase();
         static::Init();
 
-        $data = $model->GetDataRaw();
-        unset($data['id']);
-        return SQL::InsertData(static::GetTableName(), $data);
+        return SQL::InsertData(static::GetTableName(), $model->GetDataRaw());
     }
 
-    /**
-     * Updates data in DB
-     *
-     * Shouldn't be called from the base class
-     * @param BaseModel $model
-     * @return void
-     */
-    final public static function UpdateModel(BaseModel $model): void
-    {
-        static::CheckNotBase();
-        static::Init();
-
-        $data = $model->GetDataRaw();
-        SQL::UpdateDataWithCondition(static::GetTableName(), $data, [
-            ':id' => $model->id
-        ], "id = :id");
-    }
-
-    /**
-     * Deletes data from DB
-     *
-     * Shouldn't be called from the base class
-     * @param BaseModel $model
-     * @return bool Whether the model was deleted
-     */
-    final public static function DeleteModel(BaseModel $model): int
-    {
-        static::CheckNotBase();
-        static::Init();
-
-        $affectedRows = SQL::DeleteDataWithCondition(static::GetTableName(), "id = :id", [
-            ':id' => $model->id
-        ]);
-
-        return $affectedRows != 0;
-    }
-
-    /**
-     * Default in every model
-     * @sql INT NOT NULL AUTO_INCREMENT PRIMARY KEY
-     * @var int
-     */
-    public $id;
+    abstract public static function UpdateModel(BaseModel $model): void;
+    abstract public static function DeleteModel(BaseModel $model): bool;
 
     /**
      * Constructs the model and initializes the DB table
@@ -324,9 +289,9 @@ abstract class BaseModel
      * Inserts into the DB
      * @return void
      */
-    final public function Insert(): void
+    final public function Insert(): int
     {
-        static::InsertModel($this);
+        return static::InsertModel($this);
     }
 
     /**
@@ -342,9 +307,9 @@ abstract class BaseModel
      * Deletes from the DB based on id
      * @return void
      */
-    final public function Delete(): void
+    final public function Delete(): bool
     {
-        static::DeleteModel($this);
+        return static::DeleteModel($this);
     }
 
     /**

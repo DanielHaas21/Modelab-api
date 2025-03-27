@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
-use App\Database\BaseModel;
+use App\Database\BaseModels\BaseModelId;
 
-class Category extends BaseModel
+class Category extends BaseModelId
 {
     /**
      * @sql VARCHAR(64) NOT NULL

@@ -54,7 +54,7 @@ class CategoryController
             $category = new Category();
             $category->name = $name;
 
-            $insertedId = Category::InsertModel($category);
+            $insertedId = $category->Insert();
 
             $res->SetJSON([
                 'message' => 'Category created',
