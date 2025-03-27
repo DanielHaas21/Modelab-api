@@ -2,15 +2,44 @@
 
 namespace App\Models;
 
-class Asset
+use App\Database\BaseModels\BaseModelId;
+
+class Asset extends BaseModelId
 {
-    public $id;
+    /**
+     * @sql VARCHAR(128) NOT NULL
+     * @var string
+     */
     public $name;
+
+    /**
+     * @sql VARCHAR(320) NOT NULL
+     * @var string
+     */
     public $description;
 
-    public $category_id;
-    public $owner_id;
 
-    public $preview_asset_id;
-    public $main_asset_id;
+    /**
+     * @sql INTEGER NOT NULL
+     * @var int
+     */
+    public $categoryId;
+
+    /**
+     * @sql INTEGER NOT NULL
+     * @var int
+     */
+    public $ownerId;
+
+    /**
+     * @sql INTEGER NOT NULL
+     * @var int
+     */
+    public $previewFileId;
+
+    /**
+     * @sql INTEGER NOT NULL
+     * @var int
+     */
+    public $mainFileId;
 }

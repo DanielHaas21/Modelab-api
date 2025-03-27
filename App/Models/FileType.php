@@ -2,8 +2,13 @@
 
 namespace App\Models;
 
-class FileType
+use App\Database\BaseModels\BaseModelId;
+
+class FileType extends BaseModelId
 {
-    public $id;
+    /**
+     * @sql VARCHAR(64) NOT NULL
+     * @var string
+     */
     public $name;
 }

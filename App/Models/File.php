@@ -2,11 +2,25 @@
 
 namespace App\Models;
 
-class File
+use App\Database\BaseModels\BaseModelId;
+
+class File extends BaseModelId
 {
-    public $id;
+    /**
+     * @sql VARCHAR(2048) NOT NULL
+     * @var string
+     */
     public $path;
 
-    public $asset_id;
-    public $file_type_id;
+    /**
+     * @sql INTEGER NOT NULL
+     * @var int
+     */
+    public $assetId;
+
+    /**
+     * @sql INTEGER NOT NULL
+     * @var int
+     */
+    public $fileTypeId;
 }

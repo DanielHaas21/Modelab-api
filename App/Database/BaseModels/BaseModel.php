@@ -12,13 +12,14 @@ use App\Database\SQLUtils;
  * The model static class implements basic CRUD operations.
  * Each model instance CRUD operations uses the static methods.
  *
- * Model uses INT ID as a primary key.
- *
  * Use:
  * - @sql in PHPDoc above a field to define it as a column:
  *
  * /* @sql INT NOT NULL PRIMARY KEY *\/
  * public $id;
+ *
+ * - @isPrimaryKey to mark the field as a primary key
+ * - @isUnique to mark the field as unique
  */
 abstract class BaseModel
 {
@@ -39,7 +40,7 @@ abstract class BaseModel
      *
      * Shouldn't be called from the base class
      * @throws DatabaseException
-     * @return array{type: string, field: string, sql: string}
+     * @return array{type: string, field: string, sql: string, isPrimaryKey: bool, isUnique: bool}
      */
     final public static function GetSQLProperties(): array
     {
@@ -62,11 +63,16 @@ abstract class BaseModel
                 continue;
             }
 
+            $isPrimaryKey = preg_match('/@isPrimaryKey/', $docComment);
+            $isUnique = preg_match('/@isUnique/', $docComment);
+
             $sql = $sqlMatches[1];
             $sqlProperties[] = [
                 'field' => $property->getName(),
                 'sql' => $sql,
-                'type' => SQLUtils::GetTypeFromCreateSQL($sql)
+                'type' => SQLUtils::GetTypeFromCreateSQL($sql),
+                'isPrimaryKey' => $isPrimaryKey,
+                'isUnique' => $isUnique,
             ];
         }
 
@@ -137,20 +143,39 @@ abstract class BaseModel
             return;
         }
 
-        $sqlProperties = static::GetSQLProperties();
+        $properties = static::GetSQLProperties();
 
-        $columns = array_map(
-            function ($property): string {
-                return '`' . $property['field'] . '` ' . $property['sql'];
-            },
-            $sqlProperties
-        );
+        $columns = [];
+        $primaryKeys = [];
+        $unique = [];
+        foreach ($properties as $property) {
+            $sqlField = '`' . $property['field'] . '`';
+
+            $columns[] =  $sqlField . ' ' . $property['sql'];
+
+            if ($property['isPrimaryKey']) {
+                $primaryKeys[] = $sqlField;
+            }
+            if ($property['isUnique']) {
+                $unique[] = $sqlField;
+            }
+        }
 
         $columnDefinitions = implode(',', $columns);
+        $primaryKeysSql = count($primaryKeys) == 0
+            ? ''
+            : ',PRIMARY KEY (' . implode(',', $primaryKeys) . ')';
+        $uniqueSql = count($unique) == 0
+            ? ''
+            : ',UNIQUE (' . implode(',', $unique) . ')';
+
         $tableName = static::GetTableName();
         $sql = "CREATE TABLE `$tableName` (
             $columnDefinitions
+            $primaryKeysSql
+            $uniqueSql
         )";
+        var_dump($sql);
         SQL::MiscExecute($sql);
     }
 

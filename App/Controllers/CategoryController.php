@@ -57,7 +57,7 @@ class CategoryController
             $insertedId = $category->Insert();
 
             $res->SetJSON([
-                'message' => 'Category created',
+                'message' => $insertedId == 0 ? 'Category already exists' : 'Category created',
                 'id' => $insertedId
             ]);
         };

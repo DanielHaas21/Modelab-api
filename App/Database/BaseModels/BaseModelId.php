@@ -85,7 +85,8 @@ abstract class BaseModelId extends BaseModel
 
     /**
      * Unique identificator
-     * @sql INT NOT NULL AUTO_INCREMENT PRIMARY KEY
+     * @sql INT NOT NULL AUTO_INCREMENT
+     * @isPrimaryKey
      * @var int
      */
     public $id;

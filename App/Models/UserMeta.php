@@ -2,10 +2,19 @@
 
 namespace App\Models;
 
-class UserMeta
+use App\Database\BaseModels\BaseModelId;
+
+class UserMeta extends BaseModelId
 {
-    public $id;
+    /**
+     * @sql INTEGER NOT NULL
+     * @var int
+     */
     public $level;
 
-    public $user_id;
+    /**
+     * @sql INTEGER NOT NULL
+     * @var int
+     */
+    public $userId;
 }
