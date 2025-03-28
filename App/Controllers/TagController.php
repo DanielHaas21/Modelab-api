@@ -2,13 +2,13 @@
 
 namespace App\Controllers;
 
-use App\Models\Asset;
-use App\Models\Category;
+use App\Models\AssetTag;
+use App\Models\Tag;
 use App\Router\Request;
 use App\Router\RequestError;
 use App\Router\Response;
 
-class CategoryController
+class TagController
 {
     /**
      * @return (callable(Request, Response):void)
@@ -17,16 +17,16 @@ class CategoryController
     {
         return function (Request $req, Response $res): void {
             /**
-             * @var Category[]
+             * @var Tag[]
              */
-            $categories = Category::SelectAllModels();
+            $tags = Tag::SelectAllModels();
 
-            $categoryData = array_map(function ($category) {
+            $tagData = array_map(function ($category) {
                 return $category->GetData();
-            }, $categories);
+            }, $tags);
 
             $res->SetJSON([
-                'categories' => $categoryData
+                'tags' => $tagData
             ]);
         };
     }
@@ -50,16 +50,16 @@ class CategoryController
             $id = intval($id);
 
             /**
-             * @var Category
+             * @var Tag
              */
-            $category = Category::SelectModel($id);
+            $tag = Tag::SelectModel($id);
 
-            if ($category == null) {
-                throw RequestError::CreateFieldError(404, 'id', 'Category with %key%: \'' . $id . '\' doesn\'t exist');
+            if ($tag == null) {
+                throw RequestError::CreateFieldError(404, 'id', 'Tag with %key%: \'' . $id . '\' doesn\'t exist');
             }
 
             $res->SetJSON([
-                'category' => $category->GetData()
+                'tag' => $tag->GetData()
             ]);
         };
     }
@@ -83,17 +83,17 @@ class CategoryController
                 throw RequestError::CreateFieldError(400, 'name', '%key% can\'t be longer than 64 chars');
             }
 
-            $category = new Category();
-            $category->name = $name;
+            $tag = new Tag();
+            $tag->name = $name;
 
-            $insertedId = $category->Insert();
+            $insertedId = $tag->Insert();
 
             if ($insertedId == 0) {
                 $id = null;
-                $message = 'Category already exists';
+                $message = 'Tag already exists';
             } else {
                 $id = $insertedId;
-                $message = 'Category created';
+                $message = 'Tag created';
             }
 
             $res->SetJSON([
@@ -122,30 +122,30 @@ class CategoryController
             $id = intval($id);
 
             /**
-             * @var Category
+             * @var Tag
              */
-            $category = Category::SelectModel($id);
+            $tag = Tag::SelectModel($id);
 
-            if ($category == null) {
-                throw RequestError::CreateFieldError(404, 'id', 'Category with %key%: \'' . $id . '\' doesn\'t exist');
+            if ($tag == null) {
+                throw RequestError::CreateFieldError(404, 'id', 'Tag with %key%: \'' . $id . '\' doesn\'t exist');
             }
 
-            $assetIds = array_map(function ($asset) {
-                return $asset->id;
-            }, Asset::SelectWhereModels("categoryId = :categoryId", [
-                ':categoryId' => $category->id
+            $assetIds = array_map(function ($assetTag) {
+                return $assetTag->assetId;
+            }, AssetTag::SelectWhereModels("tagId = :tagId", [
+                ':tagId' => $tag->id
             ]));
 
             if (count($assetIds) > 0) {
-                throw RequestError::CreateFieldError(409, 'link', 'Category \'' . $category->name . '\' is linked to some assets', [
-                    'linkedAssets' => $assetIds
+                throw RequestError::CreateFieldError(409, 'link', 'Tag \'' . $tag->name . '\' is linked to some assets', [
+                    'linkedAssets' => $assetIds,
                 ]);
             }
 
-            $category->Delete();
+            $tag->Delete();
 
             $res->SetJSON([
-                'message' => 'Category deleted',
+                'message' => 'Tag deleted',
                 'id' => $id
             ]);
         };

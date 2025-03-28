@@ -43,7 +43,7 @@ class AssetTag extends BaseModel
         static::CheckNotBase();
         static::Init();
 
-        $data = $model->GetDataRaw();
+        $data = $model->GetData();
         SQL::UpdateDataWithCondition(static::GetTableName(), $data, [
             ':assetId' => $model->assetId,
             ':tagId' => $model->tagId,

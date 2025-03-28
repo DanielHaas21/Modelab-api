@@ -41,7 +41,7 @@ abstract class BaseModelId extends BaseModel
         static::CheckNotBase();
         static::Init();
 
-        $data = $model->GetDataRaw();
+        $data = $model->GetData();
         unset($data['id']);
         return SQL::InsertData(static::GetTableName(), $data);
     }
@@ -58,7 +58,7 @@ abstract class BaseModelId extends BaseModel
         static::CheckNotBase();
         static::Init();
 
-        $data = $model->GetDataRaw();
+        $data = $model->GetData();
         SQL::UpdateDataWithCondition(static::GetTableName(), $data, [
             ':id' => $model->id
         ], "id = :id");

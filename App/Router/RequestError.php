@@ -14,12 +14,13 @@ class RequestError extends Error
      * @param int $code
      * @param string $key
      * @param string $message
+     * @param array $data
      * @return RequestError
      */
-    public static function CreateFieldError(int $code, string $key, string $message): RequestError
+    public static function CreateFieldError(int $code, string $key, string $message, array $data = []): RequestError
     {
         $message = str_replace('%key%', $key, $message);
-        return new RequestError($code, $key, $message);
+        return new RequestError($code, $key, $message, $data);
     }
 
     /**
@@ -29,15 +30,23 @@ class RequestError extends Error
     private $cause;
 
     /**
+     * Other JSON data
+     * @var array
+     */
+    private $data;
+
+    /**
      * Constructor of the RequestError
      * @param int $code HTTP Status code
      * @param string $cause Cause of the error
      * @param string $message Message of the error
+     * @param array $data Other JSON data
      */
-    public function __construct(int $code, string $cause, string $message)
+    public function __construct(int $code, string $cause, string $message, array $data = [])
     {
         parent::__construct($message, $code);
         $this->cause = $cause;
+        $this->data = $data;
     }
 
     /**
@@ -46,11 +55,13 @@ class RequestError extends Error
      */
     public function GetJSON(): array
     {
-        return [
+        $data = [
             'cause'   => $this->cause,
             'message' => $this->message,
             'code'    => $this->code,
         ];
+
+        return array_merge($this->data, $data);
     }
 
 }

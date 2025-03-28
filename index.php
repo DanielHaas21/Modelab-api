@@ -9,9 +9,10 @@ use App\Router\Router;
 $router = new Router();
 
 require_once __DIR__ . '/routes/categoryRoutes.php';
+require_once __DIR__ . '/routes/tagRoutes.php';
 
 $router->AddGET('/', function (Request $req, Response $res): void {
-    $res->SetText("Modellab API");
+    $res->SetText("Modelab API");
 });
 
 $router->AddGET('/info', function (Request $req, Response $res): void {

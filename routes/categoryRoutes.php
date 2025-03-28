@@ -5,9 +5,9 @@ use App\Router\Routes;
 
 $routes = new Routes();
 
-$routes->AddPOST("/all", CategoryController::GetAllCategories());
-$routes->AddPOST("/create", CategoryController::CreateCategory());
-$routes->AddPOST("/{id}", CategoryController::GetCategory());
-$routes->AddPOST("/{id}/delete", CategoryController::DeleteCategory());
+$routes->AddPOST("/all", CategoryController::SelectAll());
+$routes->AddPOST("/create", CategoryController::Create());
+$routes->AddPOST("/{id}", CategoryController::Select());
+$routes->AddPOST("/{id}/delete", CategoryController::Delete());
 
 $router->AddRoutes('/category', $routes);

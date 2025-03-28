@@ -113,6 +113,7 @@ abstract class BaseModel
 
         foreach ($sqlProperties as $property) {
             $name = $property['field'];
+            $type = $property['type'];
 
             if (!isset($data[$name])) {
                 throw new DatabaseException("Missing property in data: $name");
@@ -123,7 +124,8 @@ abstract class BaseModel
             }
 
             $reflectionProperty = $reflectionClass->getProperty($name);
-            $reflectionProperty->setValue($model, $data[$name]);
+            $value = SQLUtils::CastFromSQLType($data[$name], $type);
+            $reflectionProperty->setValue($model, $value);
         }
 
         return $model;
@@ -295,7 +297,7 @@ abstract class BaseModel
         static::CheckNotBase();
         static::Init();
 
-        return SQL::InsertData(static::GetTableName(), $model->GetDataRaw());
+        return SQL::InsertData(static::GetTableName(), $model->GetData());
     }
 
     abstract public static function UpdateModel(BaseModel $model): void;
@@ -341,34 +343,6 @@ abstract class BaseModel
      * @throws DatabaseException
      * @return array ["column" => "value"]
      */
-    final public function GetDataRaw(): array
-    {
-        $sqlProperties = static::GetSQLProperties();
-        $reflectionClass = new \ReflectionClass(get_called_class());
-
-        $data = [];
-
-        foreach ($sqlProperties as $property) {
-            $name = $property['field'];
-
-            if (!$reflectionClass->hasProperty($name)) {
-                throw new DatabaseException("Missing property in class: $name");
-            }
-
-            $reflectionProperty = $reflectionClass->getProperty($name);
-            $value = strval($reflectionProperty->getValue($this));
-
-            $data[$name] = $value;
-        }
-
-        return $data;
-    }
-
-    /**
-     * Constructs JSON ready data from the model
-     * @throws DatabaseException
-     * @return array ["column" => "value"]
-     */
     final public function GetData(): array
     {
         $sqlProperties = static::GetSQLProperties();
@@ -384,10 +358,9 @@ abstract class BaseModel
             }
 
             $reflectionProperty = $reflectionClass->getProperty($name);
-            $value = strval($reflectionProperty->getValue($this));
+            $value = $reflectionProperty->getValue($this);
 
-            $type = $property['type'];
-            $data[$name] = SQLUtils::CastFromSQLType($value, $type);
+            $data[$name] = $value;
         }
 
         return $data;
