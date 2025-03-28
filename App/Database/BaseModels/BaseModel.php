@@ -175,7 +175,6 @@ abstract class BaseModel
             $primaryKeysSql
             $uniqueSql
         )";
-        var_dump($sql);
         SQL::MiscExecute($sql);
     }
 
