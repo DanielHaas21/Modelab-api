@@ -8,32 +8,13 @@
 use App\Database\Exceptions\DatabaseException;
 use App\Database\Exceptions\SQLExecutionException;
 use App\Database\SQL;
-use App\Models\Asset;
-use App\Models\AssetTag;
-use App\Models\Category;
-use App\Models\File;
-use App\Models\FileType;
-use App\Models\Tag;
-use App\Models\User;
-use App\Models\UserMeta;
+
+require_once __DIR__ . '/utils.php';
 
 require_once __DIR__ . '/../autoload.php';
 require_once __DIR__ . '/../config/db.php';
 
-function echoLine(string $msg = ""): void
-{
-    echo "$msg\n";
-}
-
-function echoError(Exception $e): void
-{
-    echoLine(get_class($e) . ": " . $e->getMessage());
-}
-
-$modelClasses = [Asset::class, AssetTag::class, Category::class, File::class, FileType::class, Tag::class, User::class, UserMeta::class];
-
 // Check PDO
-
 echoLine("Initializing PDO...");
 try {
     SQL::InitPDO();
@@ -70,13 +51,12 @@ try {
 echoLine("DB '$database' OK");
 
 // Check models
-
 echoLine();
 echoLine("Checking Models...");
-foreach ($modelClasses as $modelClass) {
+foreach (ALL_MODELS as $modelClass) {
     echoLine("Checking Model $modelClass...");
     try {
-        $differences = $modelClass::Init();
+        $modelClass::Init();
     } catch (SQLExecutionException $e) {
         echoError($e);
         echoLine("Checking Model $modelClass Failed");

@@ -184,19 +184,21 @@ abstract class BaseModel
      * Drops the model table, if it exists
      *
      * Shouldn't be called from the base class
-     * @return void
+     * @return bool Whether the model didn't already exist
      */
-    final public static function Drop(): void
+    final public static function Drop(): bool
     {
         static::CheckNotBase();
 
         if (!SQL::MiscTableExists(static::GetTableName())) {
-            return;
+            return false;
         }
 
         $tableName = static::GetTableName();
         $sql = "DROP TABLE `$tableName`";
         SQL::MiscExecute($sql);
+
+        return true;
     }
 
     /**

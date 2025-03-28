@@ -13,4 +13,7 @@ migrate:
 
 build:
 	@bash $(SH_PATH)/build.sh
+
+drop-models:
+	@bash $(SH_PATH)/drop-models.sh
 	
