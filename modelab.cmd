@@ -51,6 +51,19 @@ IF "%1"=="build" (
     exit /b
 )
 
+IF "%1"=="drop-db" (
+    echo  -----------------------------------
+    echo  ^| Executing script: drop-models.bat     ^| 
+    echo  -----------------------------------
+    
+    call bin/drop-models.bat
+
+    echo  -----------------------------------
+    echo  ^|         Execution complete      ^| 
+    echo  -----------------------------------
+
+    exit /b
+)
 
 echo  ---------------------------------------------------------------
 echo  ^|  Invalid argument. Valid arguments are: create-db, migrate  ^| 
