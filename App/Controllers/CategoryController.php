@@ -10,7 +10,6 @@ use App\Router\Response;
 class CategoryController
 {
     /**
-     * Gets all categories
      * @return (callable(Request, Response):void)
      */
     public static function GetAllCategories(): callable
@@ -32,7 +31,39 @@ class CategoryController
     }
 
     /**
-     * Creates category
+     * @return (callable(Request, Response):void)
+     */
+    public static function GetCategory(): callable
+    {
+        return function (Request $req, Response $res): void {
+            $variables = $req->GetVariables();
+
+            if (! isset($variables['id'])) {
+                throw RequestError::CreateFieldError(400, 'id', '%key% is required');
+            }
+            $id = $variables['id'];
+
+            if (! is_numeric($id)) {
+                throw RequestError::CreateFieldError(400, 'id', '%key% is not numeric');
+            }
+            $id = intval($id);
+
+            /**
+             * @var Category
+             */
+            $category = Category::SelectModel($id);
+
+            if ($category == null) {
+                throw RequestError::CreateFieldError(404, 'id', 'category with %key%: \'' . $id . '\' doesn\'t exist');
+            }
+
+            $res->SetJSON([
+                'category' => $category->GetData()
+            ]);
+        };
+    }
+
+    /**
      * @return (callable(Request, Response):void)
      */
     public static function CreateCategory(): callable
@@ -64,7 +95,6 @@ class CategoryController
     }
 
     /**
-     * Creates category
      * @return (callable(Request, Response):void)
      */
     public static function DeleteCategory(): callable

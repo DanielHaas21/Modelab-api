@@ -14,12 +14,18 @@ class RouteDefinition
      * @var string
      */
     public const URI_SEPARATOR = '/';
+
     /**
      * Regex of a variable in the route.
      * {var_name}
      * @var string
      */
     public const VARIABLE_REGEX = '/^\{(.+)\}$/';
+
+    /**
+     * @var string
+     */
+    public const VALUE_REGEX = '([^\/]+)';
 
     /**
      * Extracts regex and variable names from the uri definition
@@ -40,7 +46,7 @@ class RouteDefinition
             $variableMatchGroups = [];
             $variableMatch        = preg_match(self::VARIABLE_REGEX, $routePart, $variableMatchGroups);
             if ($variableMatch) {
-                $routeRegex .= '(.+)';
+                $routeRegex .= self::VALUE_REGEX;
                 $variableNames[] = $variableMatchGroups[1];
             } else {
                 $routeRegex .= preg_quote($routePart, self::URI_SEPARATOR);

@@ -7,6 +7,7 @@ $routes = new Routes();
 
 $routes->AddPOST("/all", CategoryController::GetAllCategories());
 $routes->AddPOST("/create", CategoryController::CreateCategory());
-$routes->AddPOST("/delete/{id}", CategoryController::DeleteCategory());
+$routes->AddPOST("/{id}", CategoryController::GetCategory());
+$routes->AddPOST("/{id}/delete", CategoryController::DeleteCategory());
 
 $router->AddRoutes('/category', $routes);
