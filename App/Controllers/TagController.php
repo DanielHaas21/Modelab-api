@@ -6,6 +6,7 @@ use App\Models\AssetTag;
 use App\Models\Tag;
 use App\Router\Request;
 use App\Router\RequestError;
+use App\Router\DataValidator;
 use App\Router\Response;
 
 class TagController
@@ -39,15 +40,9 @@ class TagController
         return function (Request $req, Response $res): void {
             $variables = $req->GetVariables();
 
-            if (! isset($variables['id'])) {
-                throw RequestError::CreateFieldError(400, 'id', '%key% is required');
-            }
-            $id = $variables['id'];
 
-            if (! is_numeric($id)) {
-                throw RequestError::CreateFieldError(400, 'id', '%key% is not numeric');
-            }
-            $id = intval($id);
+            DataValidator::ValidateFieldsAre([DataValidator::REQUIRED, DataValidator::NUMERIC], $variables, ['id']);
+            $id = intval($variables['id']);
 
             /**
              * @var Tag
@@ -72,9 +67,8 @@ class TagController
         return function (Request $req, Response $res): void {
             $data = $req->GetJSON();
 
-            if (! isset($data['name'])) {
-                throw RequestError::CreateFieldError(400, 'name', '%key% is required');
-            }
+            DataValidator::ValidateFieldsAre(DataValidator::REQUIRED, $data, ['name']);
+
             $name = strval($data['name']);
             if (strlen($name) == 0) {
                 throw RequestError::CreateFieldError(400, 'name', '%key% can\'t be empty');
@@ -111,15 +105,8 @@ class TagController
         return function (Request $req, Response $res): void {
             $variables = $req->GetVariables();
 
-            if (! isset($variables['id'])) {
-                throw RequestError::CreateFieldError(400, 'id', '%key% is required');
-            }
-            $id = $variables['id'];
-
-            if (! is_numeric($id)) {
-                throw RequestError::CreateFieldError(400, 'id', '%key% is not numeric');
-            }
-            $id = intval($id);
+            DataValidator::ValidateFieldsAre([DataValidator::REQUIRED, DataValidator::NUMERIC], $variables, ['id']);
+            $id = intval($variables['id']);
 
             /**
              * @var Tag

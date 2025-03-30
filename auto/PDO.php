@@ -8,6 +8,8 @@
 use App\Database\Exceptions\DatabaseException;
 use App\Database\Exceptions\SQLExecutionException;
 use App\Database\SQL;
+use App\Models\Category;
+use App\Models\Tag;
 
 require_once __DIR__ . '/utils.php';
 
@@ -65,3 +67,19 @@ foreach (ALL_MODELS as $modelClass) {
     }
 }
 echoLine("Models OK");
+
+// Load default values
+
+$defaultCategories = ['3D', '2D', 'Audio'];
+foreach ($defaultCategories as $name) {
+    $category = new Category();
+    $category->name = $name;
+    $category->Insert();
+}
+
+$defaultTags = ['FBX', 'Unity', 'Medieval'];
+foreach ($defaultTags as $name) {
+    $tag = new Tag();
+    $tag->name = $name;
+    $tag->Insert();
+}

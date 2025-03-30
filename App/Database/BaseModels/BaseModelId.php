@@ -90,4 +90,11 @@ abstract class BaseModelId extends BaseModel
      * @var int
      */
     public $id;
+
+    public function Insert(): int
+    {
+        $insertedId = parent::Insert();
+        $this->id = $insertedId;
+        return $this->id;
+    }
 }

@@ -13,14 +13,26 @@ class File extends BaseModelId
     public $path;
 
     /**
-     * @sql INTEGER NOT NULL
-     * @var int
+     * @sql VARCHAR(128) NOT NULL
+     * @var string
      */
-    public $assetId;
+    public $name;
+
+    /**
+     * @sql VARCHAR(128) NOT NULL
+     * @var string
+     */
+    public $type;
+
+    /**
+     * @sql BOOLEAN NOT NULL
+     * @var bool
+     */
+    public $isHidden;
 
     /**
      * @sql INTEGER NOT NULL
      * @var int
      */
-    public $fileTypeId;
+    public $assetId;
 }

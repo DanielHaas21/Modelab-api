@@ -2,3 +2,5 @@
 
 config/*.php
 !config/*.example.php
+
+data

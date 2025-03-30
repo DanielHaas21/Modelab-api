@@ -18,7 +18,6 @@ class Asset extends BaseModelId
      */
     public $description;
 
-
     /**
      * @sql INTEGER NOT NULL
      * @var int
@@ -26,20 +25,14 @@ class Asset extends BaseModelId
     public $categoryId;
 
     /**
-     * @sql INTEGER NOT NULL
-     * @var int
+     * @sql VARCHAR(2048) NOT NULL
+     * @var string
      */
-    public $ownerId;
+    public $filesDirectory;
 
     /**
      * @sql INTEGER NOT NULL
      * @var int
      */
-    public $previewFileId;
-
-    /**
-     * @sql INTEGER NOT NULL
-     * @var int
-     */
-    public $mainFileId;
+    public $uploaderId;
 }

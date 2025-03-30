@@ -186,7 +186,7 @@ abstract class BaseModel
      * Shouldn't be called from the base class
      * @return bool Whether the model didn't already exist
      */
-    final public static function Drop(): bool
+    public static function Drop(): bool
     {
         static::CheckNotBase();
 
@@ -207,7 +207,7 @@ abstract class BaseModel
      * Shouldn't be called from the base class
      * @return void
      */
-    final public static function Truncate(): void
+    public static function Truncate(): void
     {
         static::CheckNotBase();
         static::Init();
@@ -225,7 +225,7 @@ abstract class BaseModel
      * @param array $params
      * @return object[]
      */
-    final public static function SelectWhereModels(string $condition, array $params): array
+    public static function SelectWhereModels(string $condition, array $params): array
     {
         static::CheckNotBase();
         static::Init();
@@ -244,7 +244,7 @@ abstract class BaseModel
      * Shouldn't be called from the base class
      * @return object[]
      */
-    final public static function SelectAllModels(): array
+    public static function SelectAllModels(): array
     {
         static::CheckNotBase();
         static::Init();
@@ -266,7 +266,7 @@ abstract class BaseModel
      * Shouldn't be called from the base class
      * @return object[]
      */
-    final public static function SelectAllModelsLimited(int $count, int $offset): array
+    public static function SelectAllModelsLimited(int $count, int $offset): array
     {
         static::CheckNotBase();
         static::Init();
@@ -274,7 +274,7 @@ abstract class BaseModel
         $datas = SQL::SelectDataWithCondition(
             static::GetTableName(),
             '*',
-            'LIMIT :p_count OFFSET :p_offset',
+            'TRUE LIMIT :p_count OFFSET :p_offset',
             [
             ':p_count' => max(0, $count),
             ':p_offset' => max(0, $offset),
@@ -317,7 +317,7 @@ abstract class BaseModel
      * Inserts into the DB
      * @return void
      */
-    final public function Insert(): int
+    public function Insert(): int
     {
         return static::InsertModel($this);
     }
@@ -326,7 +326,7 @@ abstract class BaseModel
      * Updates the DB row based on id
      * @return void
      */
-    final public function Update(): void
+    public function Update(): void
     {
         static::UpdateModel($this);
     }
@@ -335,7 +335,7 @@ abstract class BaseModel
      * Deletes from the DB based on id
      * @return void
      */
-    final public function Delete(): bool
+    public function Delete(): bool
     {
         return static::DeleteModel($this);
     }
