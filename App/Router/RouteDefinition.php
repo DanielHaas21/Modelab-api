@@ -20,7 +20,7 @@ class RouteDefinition
      * {var_name}
      * @var string
      */
-    public const VARIABLE_REGEX = '/^\{(.+)\}$/';
+    public const VARIABLE_REGEX = '/^\{(\S+)\}$/';
 
     /**
      * @var string
