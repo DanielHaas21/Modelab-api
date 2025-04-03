@@ -25,7 +25,7 @@ class RouteDefinition
     /**
      * @var string
      */
-    public const VALUE_REGEX = '([^\/]+)';
+    public const VALUE_REGEX = '(\d+)';
 
     /**
      * Extracts regex and variable names from the uri definition
@@ -34,7 +34,7 @@ class RouteDefinition
      */
     private static function ExtractRegexAndVariableNames(string $uri): array
     {
-        $routeParts    = array_filter(explode(self::URI_SEPARATOR, $uri));
+        $routeParts = array_filter(explode(self::URI_SEPARATOR, $uri));
         $variableNames = [];
 
         $quotedUriSeparator = preg_quote(self::URI_SEPARATOR, self::URI_SEPARATOR);
@@ -44,7 +44,7 @@ class RouteDefinition
             $routeRegex .= $quotedUriSeparator;
 
             $variableMatchGroups = [];
-            $variableMatch        = preg_match(self::VARIABLE_REGEX, $routePart, $variableMatchGroups);
+            $variableMatch = preg_match(self::VARIABLE_REGEX, $routePart, $variableMatchGroups);
             if ($variableMatch) {
                 $routeRegex .= self::VALUE_REGEX;
                 $variableNames[] = $variableMatchGroups[1];
@@ -59,7 +59,7 @@ class RouteDefinition
         }
 
         return [
-            'regex'          => '/^' . $routeRegex . '$/',
+            'regex' => '/^' . $routeRegex . '$/',
             'variableNames' => $variableNames,
         ];
     }
@@ -105,9 +105,9 @@ class RouteDefinition
     public function ChangeURI(string $uri): void
     {
         $this->uriDefinition = $uri;
-        $extractedRoute      = self::ExtractRegexAndVariableNames($uri);
+        $extractedRoute = self::ExtractRegexAndVariableNames($uri);
 
-        $this->regex           = $extractedRoute['regex'];
+        $this->regex = $extractedRoute['regex'];
         $this->regexVariables = $extractedRoute['variableNames'];
     }
 
