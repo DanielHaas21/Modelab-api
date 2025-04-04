@@ -18,7 +18,7 @@ require_once __DIR__ . '/../../config/files.php';
 
 class AssetController
 {
-    public const MAX_COUNT_PER_PAGE = 20;
+    public const MAX_COUNT_PER_PAGE = 50;
 
     /**
      * @return (callable(Request, Response):void)
@@ -38,11 +38,13 @@ class AssetController
             }
 
             $assetCount = SQL::SelectTableCount('*', Asset::GetTableName());
-            $totalPages = max(ceil($assetCount / $countPerPage), 1);
+            $pageCount = max(ceil($assetCount / $countPerPage), 1);
 
-            if ($page < 0 || $page >= $totalPages) {
-                throw RequestError::CreateFieldError(416, 'page', '%key% must be in range (0-' . ($totalPages - 1) . ')', ['totalPages' => $totalPages]);
+            if ($page < 0 || $page >= $pageCount) {
+                throw RequestError::CreateFieldError(416, 'page', '%key% must be in range (0-' . ($pageCount - 1) . ')', ['totalPages' => $pageCount]);
             }
+
+            $assetModels = Asset::SelectAllModelsLimited($countPerPage, $countPerPage * $page);
 
             $assets = array_map(function ($asset) {
                 $tags = array_map(function ($assetTag) {
@@ -59,13 +61,142 @@ class AssetController
                     'tags' => $tags,
                     'category' => $category->GetData()
                 ];
-            }, Asset::SelectAllModelsLimited($countPerPage, $countPerPage * $page));
+            }, $assetModels);
 
             $res->SetJSON([
                 'assets' => $assets,
                 'info' => [
                     'page' => $page,
-                    'pageCount' => $totalPages
+                    'count' => $countPerPage,
+                    'pageCount' => $pageCount
+                ]
+            ]);
+        };
+    }
+
+    /**
+     * @return (callable(Request, Response):void)
+     */
+    public static function Search(): callable
+    {
+        return function (Request $req, Response $res): void {
+            $data = $req->GetJSON();
+
+            DataValidator::ValidateFieldsAre([DataValidator::REQUIRED, DataValidator::NUMERIC], $data, ['page', 'count']);
+
+            $page = intval($data['page']);
+            $countPerPage = intval($data['count']);
+
+            $nameQuery = $data['nameQuery'] ?? '';
+            $descriptionQuery = $data['descriptionQuery'] ?? '';
+            $categoryQuery = $data['categoryQuery'] ?? '';
+            $tagQuery = $data['tagQuery'] ?? '';
+
+            if ($countPerPage <= 0 || $countPerPage > self::MAX_COUNT_PER_PAGE) {
+                throw RequestError::CreateFieldError(416, 'count', '%key% must be in range (1-' . self::MAX_COUNT_PER_PAGE . ')');
+            }
+
+            $searchConditions = [];
+            $searchParams = [];
+
+            $beforeWhereSql = [];
+            $afterWhereSql = [];
+
+            $tableName = Asset::GetTableName();
+
+            // Query name
+            if (strlen($nameQuery) != 0) {
+                $searchConditions[] = "name LIKE CONCAT('%', :nameQuery, '%')";
+                $searchParams[':nameQuery'] = $nameQuery;
+            }
+
+            // Query description
+            if (strlen($descriptionQuery) != 0) {
+                $searchConditions[] = "description LIKE CONCAT('%', :descriptionQuery, '%')";
+                $searchParams[':descriptionQuery'] = $descriptionQuery;
+            }
+
+            // Query categoryId
+            if (strlen($categoryQuery) != 0) {
+                $categoryQueries = array_map(function ($query) {
+                    $query = trim($query);
+                    if (!is_numeric($query)) {
+                        throw RequestError::CreateFieldError(400, 'categoryQuery', '%key% has a non numeric id');
+                    }
+                    return intval($query);
+                }, explode(',', $categoryQuery));
+
+                $searchConditions[] = "categoryId IN (" . join(',', $categoryQueries) . ")";
+            }
+
+            // Query tagIds, must match all
+            if (strlen($tagQuery) != 0) {
+                $tagQueries = array_map(function ($query) {
+                    $query = trim($query);
+                    if (!is_numeric($query)) {
+                        throw RequestError::CreateFieldError(400, 'tagQuery', '%key% has a non numeric id');
+                    }
+                    return intval($query);
+                }, explode(',', $tagQuery));
+
+                $assetTagTableName = AssetTag::GetTableName();
+                $tagCount = count($tagQueries);
+
+                $beforeWhereSql[] = "INNER JOIN $assetTagTableName ON $assetTagTableName.assetId = $tableName.id";
+
+                $searchConditions[] = "tagId IN (" . join(',', $tagQueries) . ")";
+
+                $afterWhereSql[] = "GROUP BY $tableName.id HAVING COUNT(DISTINCT $assetTagTableName.tagId) = $tagCount";
+            }
+
+            if (count($searchConditions) == 0) {
+                throw RequestError::CreateFieldError(400, 'query', 'Not a single %key% specified');
+            }
+
+            $searchSql = join(' AND ', $searchConditions);
+            $beforeWhereSql = join(' ', $beforeWhereSql);
+            $afterWhereSql = join(' ', $afterWhereSql);
+
+
+            $sqlCom = SQL::MiscExecute("SELECT COUNT(*) FROM $tableName $beforeWhereSql WHERE $searchSql $afterWhereSql", $searchParams);
+            $count = $sqlCom->fetchColumn();
+
+            $pageCount = max(1, ceil($count / $countPerPage) - 1);
+
+            if ($page < 0 || $page >= $pageCount) {
+                throw RequestError::CreateFieldError(416, 'page', '%key% must be in range (0-' . ($pageCount - 1) . ')', [
+                    'totalPages' => $pageCount
+                ]);
+            }
+
+            $sqlCom = SQL::MiscExecute("SELECT {$tableName}.* FROM $tableName $beforeWhereSql WHERE $searchSql $afterWhereSql", $searchParams);
+            $assetModels = array_map(function ($data) {
+                return Asset::CreateFrom($data);
+            }, $sqlCom->fetchAll(\PDO::FETCH_ASSOC));
+
+            $assets = array_map(function ($asset) {
+                $tags = array_map(function ($assetTag) {
+                    return Tag::SelectModel($assetTag->tagId)->GetData();
+                }, AssetTag::SelectWhereModels('assetId = :assetId', [
+                    ':assetId' => $asset->id
+                ]));
+
+                $category = Category::SelectModel($asset->categoryId);
+                return [
+                    'id' => $asset->id,
+                    'name' => $asset->name,
+                    'description' => $asset->description,
+                    'tags' => $tags,
+                    'category' => $category->GetData()
+                ];
+            }, $assetModels);
+
+            $res->SetJSON([
+                'assets' => $assets,
+                'info' => [
+                    'page' => $page,
+                    'count' => $countPerPage,
+                    'pageCount' => $pageCount
                 ]
             ]);
         };

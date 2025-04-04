@@ -223,14 +223,15 @@ abstract class BaseModel
      * Shouldn't be called from the base class
      * @param string $condition
      * @param array $params
+     * @param string $columns
      * @return object[]
      */
-    public static function SelectWhereModels(string $condition, array $params): array
+    public static function SelectWhereModels(string $condition, array $params, string $columns = '*'): array
     {
         static::CheckNotBase();
         static::Init();
 
-        $datas = SQL::SelectDataWithCondition(static::GetTableName(), '*', $condition, $params);
+        $datas = SQL::SelectDataWithCondition(static::GetTableName(), $columns, $condition, $params);
         $models = array_map(function ($data) {
             return static::CreateFrom($data);
         }, $datas);
