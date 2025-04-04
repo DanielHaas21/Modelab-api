@@ -17,7 +17,7 @@ Run the following commands
 ```bash
 ./modelab.cmd build
 ```
-Then, assuming you have the following files configured `db.exmaple.php`, `keys.example.php`, 'files.example.php'
+Then, assuming you have the following files configured `db.exmaple.php`, `keys.example.php`, `files.example.php`
 ```bash
 ./modelab.cmd config
 ```
@@ -33,7 +33,7 @@ Run the following commands
 ```bash
 make build
 ```
-Then, assuming you have the following files configured `db.exmaple.php`, `keys.example.php`, 'files.example.php'
+Then, assuming you have the following files configured `db.exmaple.php`, `keys.example.php`, `files.example.php`
 ```bash
 make config
 ```
