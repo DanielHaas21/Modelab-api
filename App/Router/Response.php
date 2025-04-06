@@ -57,6 +57,7 @@ class Response
      */
     public function SetJSON(array $data, int $code = 200): void
     {
+        $data['code'] = $code;
         $json = $this->EncodeJSON($data);
 
         if ($json === false) {
@@ -65,7 +66,7 @@ class Response
         }
 
         $this->response = [
-            'code'         => $code,
+            'code'         => 200,
             'content_type' => self::$CONTENT_TYPE_JSON,
             'data'         => $json,
         ];
@@ -105,9 +106,9 @@ class Response
             return;
         }
 
-        $code         = $this->response['code'];
+        $code = $this->response['code'];
         $contentType = $this->response['content_type'];
-        $data         = $this->response['data'];
+        $data = $this->response['data'];
 
         http_response_code($code);
         header('Content-Type: ' . $contentType . '; charset=utf-8');
