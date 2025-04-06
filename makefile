@@ -17,3 +17,5 @@ build:
 drop-models:
 	@bash $(SH_PATH)/drop-models.sh
 	
+config:
+	@bash $(SH_PATH)/config.sh

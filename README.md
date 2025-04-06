@@ -13,24 +13,33 @@ This is an API and backend for [Modelab](https://github.com/DanielHaas21/Modelab
 #### Windows
 Make sure you are in root directory of the project
 
-Run the following command
+Run the following commands
 ```bash
 ./modelab.cmd build
+```
+Then, assuming you have the following files configured `db.exmaple.php`, `keys.example.php`, `files.example.php`
+```bash
+./modelab.cmd config
 ```
 
 Or for specfic tasks
 - `create-db` for creating the database; adjusting the connection string in the PDO.php and config.php is recommended
+- `drop-db` for dropping the database
 - `migrate` for migrating tables
 #### Linux
 Make sure you are in root directory of the project and have make installed in your system
 
-Run the following command
+Run the following commands
 ```bash
 make build
 ```
-
+Then, assuming you have the following files configured `db.exmaple.php`, `keys.example.php`, `files.example.php`
+```bash
+make config
+```
 Or for specfic tasks
 - `create-db` for creating the database; adjusting the connection string in the PDO.php and config.php is recommended
+- `drop-db` for dropping the database
 - `migrate` for migrating tables
 
 ### Set up development enviroment
@@ -52,9 +61,10 @@ App folder structure
 │   ├───Helpers
 │   ├───Middleware
 │   ├───Models
-│   └───Router
+│   ├───Router
+│   └───Validators
 ├───config
-│   ├───someconfig.php - actual config file
+│   ├───someconfig.php - actual config file, can be auto generated
 │   └───someconfig.example.php - config file template
 ├───auto - Scripts call only from build scripts
 ├───bin - .bat and .bash build scripts
