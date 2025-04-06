@@ -1,6 +1,6 @@
 SH_PATH = bin
 
-.PHONY: init-db migrate build
+.PHONY: init-db migrate build drop-models config
 
 default:
 	@echo "No action specified"
