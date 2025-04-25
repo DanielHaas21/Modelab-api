@@ -157,8 +157,8 @@ class AssetController
             $beforeWhereSql = join(' ', $beforeWhereSql);
             $afterWhereSql = join(' ', $afterWhereSql);
 
-
-            $sqlCom = SQL::MiscExecute("SELECT COUNT(*) FROM $tableName $beforeWhereSql WHERE $searchSql $afterWhereSql", $searchParams);
+            $countSql = "SELECT COUNT(*) FROM (SELECT {$tableName}.* FROM $tableName $beforeWhereSql WHERE $searchSql $afterWhereSql) AS subquery";
+            $sqlCom = SQL::MiscExecute($countSql, $searchParams);
             $count = $sqlCom->fetchColumn();
 
             $pageCount = max(1, ceil($count / $countPerPage));
