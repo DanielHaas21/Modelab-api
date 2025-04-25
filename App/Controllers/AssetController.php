@@ -198,7 +198,6 @@ class AssetController
             $res->SetJSON([
                 'assets' => $assets,
                 'info' => [
-                    'sql' => $sql,
                     'page' => $page,
                     'count' => $countPerPage,
                     'pageCount' => $pageCount
