@@ -161,7 +161,7 @@ class AssetController
             $sqlCom = SQL::MiscExecute("SELECT COUNT(*) FROM $tableName $beforeWhereSql WHERE $searchSql $afterWhereSql", $searchParams);
             $count = $sqlCom->fetchColumn();
 
-            $pageCount = max(1, ceil($count / $countPerPage) - 1);
+            $pageCount = max(1, ceil($count / $countPerPage));
 
             if ($page < 0 || $page >= $pageCount) {
                 throw RequestError::CreateFieldError(416, 'page', '%key% must be in range (0-' . ($pageCount - 1) . ')', [
@@ -169,7 +169,11 @@ class AssetController
                 ]);
             }
 
-            $sqlCom = SQL::MiscExecute("SELECT {$tableName}.* FROM $tableName $beforeWhereSql WHERE $searchSql $afterWhereSql", $searchParams);
+            $limit = intval($countPerPage);
+            $offset = intval($countPerPage * $page);
+
+            $sql = "SELECT {$tableName}.* FROM $tableName $beforeWhereSql WHERE $searchSql $afterWhereSql LIMIT $limit OFFSET $offset";
+            $sqlCom = SQL::MiscExecute($sql, $searchParams);
             $assetModels = array_map(function ($data) {
                 return Asset::CreateFrom($data);
             }, $sqlCom->fetchAll(\PDO::FETCH_ASSOC));
@@ -194,6 +198,7 @@ class AssetController
             $res->SetJSON([
                 'assets' => $assets,
                 'info' => [
+                    'sql' => $sql,
                     'page' => $page,
                     'count' => $countPerPage,
                     'pageCount' => $pageCount
