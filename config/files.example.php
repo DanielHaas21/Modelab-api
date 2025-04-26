@@ -11,6 +11,7 @@ const FILES_CONFIG = [
             'application/octet-stream', // FBX
             'model/gltf+json', // GLTF (JSON)
             'model/stl', // STL
+            'application/mathematica', // MAYA
         ],
         'audio' => [
             'audio/ogg', // OGG

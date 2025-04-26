@@ -384,7 +384,7 @@ class AssetController
             $asset->description = $description;
 
             $asset->categoryId = $categoryId;
-            $asset->uploaderId = 0;
+            $asset->uploaderId = 0; // @TODO Add based on user
 
             $asset->Insert();
 
