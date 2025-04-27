@@ -363,12 +363,14 @@ class AssetController
                 }
 
                 $isHidden = ($meta['isHidden'] ?? false) == true;
+                $isMain = ($meta['isMain'] ?? false) == true;
 
                 $filesData[] = [
                     'name' => $fileName,
                     'type' => $type,
                     'tmpName' => $tmpName,
-                    'isHidden' => $isHidden
+                    'isHidden' => $isHidden,
+                    'isMain' => $isMain
                 ];
             }
 
@@ -399,19 +401,16 @@ class AssetController
             }
 
             foreach ($filesData as $fileData) {
-                $fileName = $fileData['name'];
-                $type = $fileData['type'];
                 $tmpName = $fileData['tmpName'];
-                $isHidden = $fileData['isHidden'];
-
                 $path = $assetDir . '/' . uniqid() . '_' . $fileName;
                 move_uploaded_file($tmpName, $path);
 
                 $file = new File();
                 $file->path = $path;
-                $file->name = $fileName;
-                $file->type = $type;
-                $file->isHidden = $isHidden ? 1 : 0;
+                $file->name = $fileData['name'];
+                $file->type = $fileData['type'];
+                $file->isMain = $fileData['isMain'] ? 1 : 0;
+                $file->isHidden = $fileData['isHidden'] ? 1 : 0;
                 $file->assetId = $asset->id;
 
                 $file->Insert();

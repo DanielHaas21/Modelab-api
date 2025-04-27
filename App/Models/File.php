@@ -31,6 +31,12 @@ class File extends BaseModelId
     public $isHidden;
 
     /**
+     * @sql BOOLEAN NOT NULL
+     * @var bool
+     */
+    public $isMain;
+
+    /**
      * @sql INTEGER NOT NULL
      * @var int
      */
