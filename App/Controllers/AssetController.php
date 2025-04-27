@@ -271,7 +271,8 @@ class AssetController
                     'id' => $file->id,
                     'name' => $file->name,
                     'type' => $file->type,
-                    'isHidden' => $file->isHidden
+                    'isHidden' => $file->isHidden,
+                    'isMain' => $file->isMain,
                 ];
             }, File::SelectWhereModels('assetId = :assetId', [
                 ':assetId' => $asset->id
