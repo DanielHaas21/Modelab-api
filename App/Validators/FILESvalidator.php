@@ -50,7 +50,7 @@ class FILESvalidator extends BaseValidator implements ValidatorStructure
         }) && self::$isValid;
 
         self::$isValid = $this->CheckProperty('supportedTypes.model', function ($val) {
-            $expected_vals = [ 'application/x-tgif', 'model/mtl', 'model/gltf-binary', 'application/octet-stream', 'model/gltf+json', 'model/stl'];
+            $expected_vals = [ 'application/x-tgif', 'model/mtl', 'model/gltf-binary', 'application/octet-stream', 'model/gltf+json', 'model/stl','application/mathematica'];
             foreach ($expected_vals as $v) {
                 if (!in_array($v, $val, true)) {
                     echoLine("value $v is missing from supportedTypes.model");
