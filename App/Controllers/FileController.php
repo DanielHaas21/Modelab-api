@@ -41,8 +41,10 @@ class FileController
             header('Content-Length: ' . filesize($path));
 
             $safeFileName = str_replace(['"', "'", '\\'], '', $file->name);
+            $encodedFileName = rawurlencode($safeFileName);
 
-            header('Content-Disposition: inline; filename="' . $safeFileName . '"');
+            header('Content-Disposition: inline; filename="' . $safeFileName . '"; filename*=UTF-8\'\'' . $encodedFileName);
+            header('Last-Modified: ' . gmdate('D, d M Y H:i:s', filemtime($path)) . ' GMT');
             header('Cache-Control: no-cache, no-store, must-revalidate');
             header('Pragma: no-cache');
             header('Expires: 0');
