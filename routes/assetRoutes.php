@@ -10,6 +10,7 @@ $routes->AddPOST("/create", AssetController::Create());
 $routes->AddPOST("/search", AssetController::Search());
 $routes->AddPOST("/{id}", AssetController::Select());
 $routes->AddPOST("/{id}/delete", AssetController::Delete());
+$routes->AddPOST("/{id}/update", AssetController::Update());
 $routes->AddPOST("/{id}/files", AssetController::SelectFiles());
 
 $router->AddRoutes('/asset', $routes);

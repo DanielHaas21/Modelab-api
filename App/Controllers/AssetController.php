@@ -435,6 +435,105 @@ class AssetController
     /**
      * @return (callable(Request, Response):void)
      */
+    public static function Update(): callable
+    {
+        return function (Request $req, Response $res): void {
+            $variables = $req->GetVariables();
+            $data = $req->GetJSON();
+
+            DataValidator::ValidateFieldsAre([DataValidator::REQUIRED, DataValidator::NUMERIC], $variables, ['id']);
+            $id = intval($variables['id']);
+
+            DataValidator::ValidateFieldsAre(DataValidator::REQUIRED, $data, ['name', 'description', 'categoryId']);
+            DataValidator::ValidateFieldsAre(DataValidator::NUMERIC, $data, ['categoryId']);
+
+            $name = $data['name'];
+            $description = $data['description'];
+            $categoryId = intval($data['categoryId']);
+            $tagIds = $data['tagIds'] ?? [];
+            $filesMeta = $data['filesMeta'] ?? [];
+
+            if (strlen($name) == 0 || strlen($name) > 128) {
+                throw RequestError::CreateFieldError(400, 'name', '%key% must have a length between (1-128)');
+            }
+            if (strlen($description) == 0 || strlen($description) > 320) {
+                throw RequestError::CreateFieldError(400, 'description', '%key% must have a length between (1-320)');
+            }
+
+            $category = Category::SelectModel($categoryId);
+            if ($category == null) {
+                throw RequestError::CreateFieldError(404, 'categoryId', 'Category with id:\'' . $categoryId . '\' doesn\'t exist');
+            }
+
+            if (!is_array($tagIds)) {
+                throw RequestError::CreateFieldError(400, 'tagIds', '%key% must be an array');
+            }
+
+            $tags = [];
+            foreach ($tagIds as $tagId) {
+                if (!is_numeric($tagId)) {
+                    throw RequestError::CreateFieldError(400, 'tagIds', 'All items of %key% must be numeric');
+                }
+                $tagId = intval($tagId);
+                $tag = Tag::SelectModel($tagId);
+                if ($tag == null) {
+                    throw RequestError::CreateFieldError(404, 'tagIds', 'Tag with id:\'' . $tagId . '\' doesn\'t exist');
+                }
+                $tags[] = $tag;
+            }
+
+            /**
+             * @var ?Asset
+             */
+            $asset = Asset::SelectModel($id);
+
+            if ($asset == null) {
+                throw RequestError::CreateFieldError(404, 'id', 'Asset with %key%: \'' . $id . '\' doesn\'t exist');
+            }
+
+            $asset->name = $name;
+            $asset->description = $description;
+            $asset->categoryId = $categoryId;
+
+            $asset->Update();
+
+            $assetTags = AssetTag::SelectWhereModels('assetId = :assetId', [':assetId' => $asset->id]);
+            foreach ($assetTags as $curentTag) {
+                $wasDeleted = true;
+                foreach ($tags as $tag) {
+                    if ($tag->id == $curentTag->tagId) {
+                        $wasDeleted = false;
+                        break;
+                    }
+                }
+
+                if ($wasDeleted) {
+                    $curentTag->Delete();
+                }
+            }
+
+            foreach ($tags as $tag) {
+                $assetTags = AssetTag::SelectWhereModels('assetId = :assetId AND tagId = :tagId', [':assetId' => $asset->id, ':tagId' => $tag->id]);
+                if (count($assetTags) > 0) {
+                    continue;
+                }
+                $assetTag = new AssetTag();
+                $assetTag->assetId = $asset->id;
+                $assetTag->tagId = $tag->id;
+
+                $assetTag->Insert();
+            }
+
+            $res->SetJSON([
+                'message' => 'Asset updated',
+                'id' => $id
+            ]);
+        };
+    }
+
+    /**
+     * @return (callable(Request, Response):void)
+     */
     public static function Delete(): callable
     {
         return function (Request $req, Response $res): void {
