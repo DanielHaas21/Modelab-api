@@ -5,7 +5,7 @@ const FILES_CONFIG = [
     'maxSizeBytes' => 100 * 1000000, // 100 MB
     'supportedTypes' => [
         'model' => [
-            'application/x-tgif', // OBJ
+            'model/obj', // OBJ
             'model/mtl', // MTL
             'model/gltf-binary', // GLB
             'application/octet-stream', // FBX
