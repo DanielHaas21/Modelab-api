@@ -21,6 +21,83 @@ class AssetController
     public const MAX_COUNT_PER_PAGE = 50;
 
     /**
+     * @param array $filesMeta
+     * @return array{isHidden: bool, isMain: bool, isRemoved: bool, name: string, tmpName: string, type: string, file: File|null}
+     */
+    private static function ExtractFilesData(array $filesMeta): array
+    {
+        $filesData = [];
+        if (!isset($_FILES['files'])) {
+            return $filesData;
+        }
+        $uploadedFiles = $_FILES['files'];
+        if (!isset($uploadedFiles['name'])) {
+            return $filesData;
+        }
+        for ($i = 0; $i < count($uploadedFiles['name']); $i++) {
+            $type = $uploadedFiles['type'][$i];
+            $fileName = $uploadedFiles['name'][$i];
+            $tmpName = $uploadedFiles['tmp_name'][$i];
+            $size = $uploadedFiles['size'][$i];
+
+            $meta = $filesMeta[$i] ?? [];
+
+            if ($size > FILES_CONFIG['maxSizeBytes']) {
+                throw RequestError::CreateFieldError(400, 'files', 'File \'' . $fileName . '\' is too large. Max size: \'' . FILES_CONFIG['maxSizeBytes'] . ' B\'');
+            }
+
+            $foundTypeGroup = null;
+            foreach (FILES_CONFIG['supportedTypes'] as $groupName => $typeGroup) {
+                if (in_array($type, $typeGroup)) {
+                    $foundTypeGroup = $groupName;
+                    break;
+                }
+            }
+
+            if ($foundTypeGroup == null) {
+                throw RequestError::CreateFieldError(400, 'files', 'File \'' . $fileName . '\' has unsupported file type: \'' . $type . '\'');
+            }
+
+            $isHidden = ($meta['isHidden'] ?? false) == true;
+            $isMain = ($meta['isMain'] ?? false) == true;
+            $isRemoved = ($meta['isRemoved'] ?? false) == true;
+
+            $file = null;
+            $id = $meta['id'] ?? null;
+            if ($id != null) {
+                $id = intval($id);
+
+                $file = File::SelectModel($id);
+                if ($file == null) {
+                    throw RequestError::CreateFieldError(404, 'id', 'File with %key%: \'' . $id . '\' doesn\'t exist');
+                }
+            }
+
+            $filesData[] = [
+                'name' => $fileName,
+                'type' => $type,
+                'tmpName' => $tmpName,
+                'isHidden' => $isHidden,
+                'isMain' => $isMain,
+                'isRemoved' => $isRemoved,
+                'file' => $file
+            ];
+        }
+
+        return $filesData;
+    }
+
+    private static function SetupDataDirectory(): void
+    {
+        umask(0);
+
+        $dataDir = FILES_CONFIG['dataPath'];
+        if (!is_dir($dataDir) && !mkdir($dataDir, 0777, true)) {
+            throw new Error('Failed to create data directory');
+        }
+    }
+
+    /**
      * @return (callable(Request, Response):void)
      */
     public static function SelectAll(): callable
@@ -337,50 +414,9 @@ class AssetController
                 throw RequestError::CreateFieldError(400, 'filesMeta', '%key% must be an array');
             }
 
-            $filesData = [];
-            $uploadedFiles = $_FILES['files'];
-            for ($i = 0; $i < count($uploadedFiles['name']); $i++) {
-                $type = $uploadedFiles['type'][$i];
-                $fileName = $uploadedFiles['name'][$i];
-                $tmpName = $uploadedFiles['tmp_name'][$i];
-                $size = $uploadedFiles['size'][$i];
+            $filesData = self::ExtractFilesData($filesMeta);
 
-                $meta = $filesMeta[$i] ?? [];
-
-                if ($size > FILES_CONFIG['maxSizeBytes']) {
-                    throw RequestError::CreateFieldError(400, 'files', 'File \'' . $fileName . '\' is too large. Max size: \'' . FILES_CONFIG['maxSizeBytes'] . ' B\'');
-                }
-
-                $foundTypeGroup = null;
-                foreach (FILES_CONFIG['supportedTypes'] as $groupName => $typeGroup) {
-                    if (in_array($type, $typeGroup)) {
-                        $foundTypeGroup = $groupName;
-                        break;
-                    }
-                }
-
-                if ($foundTypeGroup == null) {
-                    throw RequestError::CreateFieldError(400, 'files', 'File \'' . $fileName . '\' has unsupported file type: \'' . $type . '\'');
-                }
-
-                $isHidden = ($meta['isHidden'] ?? false) == true;
-                $isMain = ($meta['isMain'] ?? false) == true;
-
-                $filesData[] = [
-                    'name' => $fileName,
-                    'type' => $type,
-                    'tmpName' => $tmpName,
-                    'isHidden' => $isHidden,
-                    'isMain' => $isMain
-                ];
-            }
-
-            umask(0);
-
-            $dataDir = FILES_CONFIG['dataPath'];
-            if (!is_dir($dataDir) && !mkdir($dataDir, 0777, true)) {
-                throw new Error('Failed to create data directory');
-            }
+            self::SetupDataDirectory();
 
             $asset = new Asset();
             $asset->name = $name;
@@ -391,19 +427,20 @@ class AssetController
 
             $asset->Insert();
 
-            $assetDir = FILES_CONFIG['dataPath'] . '/' . uniqid($asset->id . '_');
+            $filesDirectory = FILES_CONFIG['dataPath'] . '/' . uniqid($asset->id . '_');
 
-            $asset->filesDirectory = $assetDir;
+            $asset->filesDirectory = $filesDirectory;
             $asset->Update();
 
-            if (!mkdir($assetDir, 0777, true)) {
+            if (!mkdir($asset->filesDirectory, 0777, true)) {
                 $asset->Delete();
                 throw new Error('Failed to create asset directory');
             }
 
             foreach ($filesData as $fileData) {
                 $tmpName = $fileData['tmpName'];
-                $path = $assetDir . '/' . uniqid() . '_' . $fileName;
+                $fileName = $fileData['name'];
+                $path = $asset->filesDirectory . '/' . uniqid() . '_' . $fileName;
                 move_uploaded_file($tmpName, $path);
 
                 $file = new File();
@@ -497,7 +534,59 @@ class AssetController
 
             $asset->Update();
 
+            $filesData = self::ExtractFilesData($filesMeta);
+
+            foreach ($filesData as $fileData) {
+                /**
+                 * @var File|null
+                 */
+                $file = $fileData['file'];
+                $isRemoved = $fileData['isRemoved'];
+                $isHidden = $fileData['isHidden'];
+                $isMain = $fileData['isMain'];
+                if ($file != null) {
+                    if ($file->assetId != $asset->id) {
+                        throw RequestError::CreateFieldError(
+                            404,
+                            'filesMeta',
+                            'File with id: \'' . $file->id . '\' doesn\'t belong to asset with id: \'' . $asset->id . '\''
+                        );
+                    }
+
+                    if ($isRemoved) {
+                        if (!unlink($file->path)) {
+                            throw new Error('Failed to delete asset file with id: \'' . $file->id . '\'');
+                        }
+
+                        $file->Delete();
+                        continue;
+                    }
+
+                    $file->isHidden = $isHidden;
+                    $file->isMain = $isMain;
+                } else {
+                    $tmpName = $fileData['tmpName'];
+                    $fileName = $fileData['name'];
+                    $path = $asset->filesDirectory . '/' . uniqid() . '_' . $fileName;
+                    move_uploaded_file($tmpName, $path);
+
+                    $file = new File();
+                    $file->path = $path;
+                    $file->name = $fileData['name'];
+                    $file->type = $fileData['type'];
+                    $file->isMain = $fileData['isMain'] ? 1 : 0;
+                    $file->isHidden = $fileData['isHidden'] ? 1 : 0;
+                    $file->assetId = $asset->id;
+
+                    $file->Insert();
+                }
+            }
+
+            /**
+             * @var AssetTag[]
+             */
             $assetTags = AssetTag::SelectWhereModels('assetId = :assetId', [':assetId' => $asset->id]);
+
             foreach ($assetTags as $curentTag) {
                 $wasDeleted = true;
                 foreach ($tags as $tag) {
@@ -559,7 +648,7 @@ class AssetController
             ]);
             foreach ($files as $file) {
                 if (!unlink($file->path)) {
-                    throw new Error('Failed to delete asset file');
+                    throw new Error('Failed to delete asset file with id: \'' . $file->id . '\'');
                 }
 
                 $file->Delete();
