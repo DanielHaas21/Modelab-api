@@ -21,11 +21,11 @@ class SQLUtils
 
     /**
      * Given by the SQL type, returns a parsed JSON ready value
-     * @param string $value
+     * @param ?string $value
      * @param string $type
      * @return mixed
      */
-    public static function CastFromSQLType(string $value, string $type)
+    public static function CastFromSQLType(?string $value, string $type)
     {
         $type = trim(strtolower($type));
         switch ($type) {

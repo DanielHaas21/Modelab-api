@@ -61,6 +61,7 @@ class AssetController
             $isHidden = ($meta['isHidden'] ?? false) == true;
             $isMain = ($meta['isMain'] ?? false) == true;
             $isRemoved = ($meta['isRemoved'] ?? false) == true;
+            $isPreview = ($meta['isPreview'] ?? false) == true;
 
             $file = null;
             $id = $meta['id'] ?? null;
@@ -80,6 +81,7 @@ class AssetController
                 'isHidden' => $isHidden,
                 'isMain' => $isMain,
                 'isRemoved' => $isRemoved,
+                'isPreview' => $isPreview,
                 'file' => $file
             ];
         }
@@ -95,6 +97,25 @@ class AssetController
         if (!is_dir($dataDir) && !mkdir($dataDir, 0777, true)) {
             throw new Error('Failed to create data directory');
         }
+    }
+
+    /**
+     * @param Asset $asset
+     * @param array $tags
+     * @param Category $category
+     * @return array{category: array, description: string, id: int, name: string, tags: array}
+     */
+    private static function CreateAssetData(Asset $asset, array $tags, Category $category): array
+    {
+        return [
+            'id' => $asset->id,
+            'name' => $asset-> name,
+            'description' => $asset-> description,
+            'category' => $category->GetData(),
+            'tags' => array_map(function ($assetTag) {
+                return Tag::SelectModel($assetTag->tagId)->GetData();
+            }, $tags)
+        ];
     }
 
     /**
@@ -124,20 +145,12 @@ class AssetController
             $assetModels = Asset::SelectAllModelsLimited($countPerPage, $countPerPage * $page);
 
             $assets = array_map(function ($asset) {
-                $tags = array_map(function ($assetTag) {
-                    return Tag::SelectModel($assetTag->tagId)->GetData();
-                }, AssetTag::SelectWhereModels('assetId = :assetId', [
+                $tags = AssetTag::SelectWhereModels('assetId = :assetId', [
                     ':assetId' => $asset->id
-                ]));
-
+                ]);
                 $category = Category::SelectModel($asset->categoryId);
-                return [
-                    'id' => $asset->id,
-                    'name' => $asset->name,
-                    'description' => $asset->description,
-                    'tags' => $tags,
-                    'category' => $category->GetData()
-                ];
+
+                return self::CreateAssetData($asset, $tags, $category);
             }, $assetModels);
 
             $res->SetJSON([
@@ -256,20 +269,12 @@ class AssetController
             }, $sqlCom->fetchAll(\PDO::FETCH_ASSOC));
 
             $assets = array_map(function ($asset) {
-                $tags = array_map(function ($assetTag) {
-                    return Tag::SelectModel($assetTag->tagId)->GetData();
-                }, AssetTag::SelectWhereModels('assetId = :assetId', [
+                $tags = AssetTag::SelectWhereModels('assetId = :assetId', [
                     ':assetId' => $asset->id
-                ]));
-
+                ]);
                 $category = Category::SelectModel($asset->categoryId);
-                return [
-                    'id' => $asset->id,
-                    'name' => $asset->name,
-                    'description' => $asset->description,
-                    'tags' => $tags,
-                    'category' => $category->GetData()
-                ];
+
+                return self::CreateAssetData($asset, $tags, $category);
             }, $assetModels);
 
             $res->SetJSON([
@@ -302,21 +307,12 @@ class AssetController
                 throw RequestError::CreateFieldError(404, 'id', 'Asset with %key%: \'' . $id . '\' doesn\'t exist');
             }
 
-            $tags = array_map(function ($assetTag) {
-                return Tag::SelectModel($assetTag->tagId)->GetData();
-            }, AssetTag::SelectWhereModels('assetId = :assetId', [
+            $tags =  AssetTag::SelectWhereModels('assetId = :assetId', [
                 ':assetId' => $asset->id
-            ]));
-
+            ]);
             $category = Category::SelectModel($asset->categoryId);
 
-            $assetData = [
-                'id' => $asset->id,
-                'name' => $asset-> name,
-                'description' => $asset-> description,
-                'category' => $category->GetData(),
-                'tags' => $tags
-            ];
+            $assetData = self::CreateAssetData($asset, $tags, $category);
 
             $res->SetJSON([
                 'asset' => $assetData
@@ -343,13 +339,14 @@ class AssetController
                 throw RequestError::CreateFieldError(404, 'id', 'Asset with %key%: \'' . $id . '\' doesn\'t exist');
             }
 
-            $files = array_map(function ($file) {
+            $files = array_map(function ($file) use ($asset) {
                 return [
                     'id' => $file->id,
                     'name' => $file->name,
                     'type' => $file->type,
                     'isHidden' => $file->isHidden,
                     'isMain' => $file->isMain,
+                    'isPreview' => $file->id == $asset->previewFileId
                 ];
             }, File::SelectWhereModels('assetId = :assetId', [
                 ':assetId' => $asset->id
@@ -451,7 +448,12 @@ class AssetController
                 $file->isHidden = $fileData['isHidden'] ? 1 : 0;
                 $file->assetId = $asset->id;
 
-                $file->Insert();
+                $fileId = $file->Insert();
+
+                if ($fileData['isPreview']) {
+                    $asset->previewFileId = $fileId;
+                    $asset->Update();
+                }
             }
 
             foreach ($tags as $tag) {

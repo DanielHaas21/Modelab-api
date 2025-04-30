@@ -115,15 +115,15 @@ abstract class BaseModel
             $name = $property['field'];
             $type = $property['type'];
 
-            if (!isset($data[$name])) {
-                throw new DatabaseException("Missing property in data: $name");
-            }
-
             if (!$reflectionClass->hasProperty($name)) {
                 throw new DatabaseException("Missing property in class: $name");
             }
-
             $reflectionProperty = $reflectionClass->getProperty($name);
+
+            if (!array_key_exists($name, $data)) {
+                throw new DatabaseException("Missing property in data: $name");
+            }
+
             $value = SQLUtils::CastFromSQLType($data[$name], $type);
             $reflectionProperty->setValue($model, $value);
         }

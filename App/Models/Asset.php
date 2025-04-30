@@ -35,4 +35,10 @@ class Asset extends BaseModelId
      * @var int
      */
     public $uploaderId;
+
+    /**
+     * @sql INTEGER
+     * @var int
+     */
+    public $previewFileId;
 }
