@@ -3,7 +3,7 @@ source "$(dirname "$0")/utils.sh"
 
 start
 separator
-run "init-db"
+run "config"
 separator
 run "migrate"
 separator

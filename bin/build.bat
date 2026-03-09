@@ -1,9 +1,7 @@
 @echo off
 
-call bin/db.bat
-
-call bin/tables.bat
-
 call bin/config.bat
+
+call bin/migrate.bat
 
 echo Build process complete
