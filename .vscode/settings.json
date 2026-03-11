@@ -1,5 +1,6 @@
 {
   "php-cs-fixer.executablePath": "${workspaceFolder}/.vscode/php-cs-fixer.phar",
+  "intelephense.environment.phpVersion": "8.5.1",
   "editor.indentSize": 2,
   "editor.tabSize": 2,
   "[php]": {
