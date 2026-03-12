@@ -2,6 +2,8 @@
 
 namespace App\Router;
 
+use ErrorException;
+
 /**
  * Request loads client data
  */
@@ -26,6 +28,25 @@ class Request
         }
 
         return $post;
+    }
+
+    /**
+     * Extracts all request headers
+     * @return array
+     */
+    public static function GetAllHeaders(): array
+    {
+        if (function_exists('getallheaders')) {
+            return getallheaders();
+        }
+
+        $headers = [];
+        foreach ($_SERVER as $name => $value) {
+            if (substr($name, 0, 5) == 'HTTP_') {
+                $headers[str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))))] = $value;
+            }
+        }
+        return $headers;
     }
 
     /**
@@ -67,9 +88,19 @@ class Request
      * @var array
      */
     private $json;
+    /**
+     * Request headers
+     * @var array
+     */
+    private $headers;
+    /**
+     * Data assigned in middleware
+     * @var array<string, object>
+     */
+    private $middlewareData;
 
     /**
-     * Constructs the Request, loads json
+     * Constructs the Request, loads json and headers
      * @param string $uri
      * @param array $variables
      */
@@ -78,6 +109,7 @@ class Request
         $this->uri       = $uri;
         $this->variables = $variables;
         $this->json      = Request::GetJSONInput();
+        $this->headers   = Request::GetAllHeaders();
     }
 
     /**
@@ -107,4 +139,43 @@ class Request
         return $this->json;
     }
 
+    /**
+     * Gets all headers or a specific header
+     * @param string|null $key
+     * @return string|array|null
+     */
+    public function GetHeaders(?string $key = null)
+    {
+        if ($key === null) {
+            return $this->headers;
+        }
+
+        return $this->headers[$key] ?? null;
+    }
+
+    /**
+     * Gets the data assigned in middleware
+     * @return array
+     */
+    public function GetMiddlewareData(string $key): ?object
+    {
+        if (isset($this->middlewareData[$key])) {
+            return $this->middlewareData[$key];
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Gets the data assigned in middleware
+     * @return array
+     */
+    public function SetMiddlewareData(string $key, object $value): void
+    {
+        if (isset($this->middlewareData[$key])) {
+            throw new ErrorException('Middleware data \'' . $key . '\' already have a value.');
+        }
+
+        $this->middlewareData[$key] = $value;
+    }
 }

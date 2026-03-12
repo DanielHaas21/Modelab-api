@@ -1,14 +1,31 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\Auth;
 
 use App\Database\BaseModels\BaseModelId;
 
 /**
- * Model of a User from Google OAuth
+ * Model of a User
  */
 class User extends BaseModelId
 {
+    /**
+     * @param string $email
+     * @return User|null
+     */
+    final public static function SelectUser(string $email): ?User
+    {
+        $users = static::SelectWhereModels('email = :email', [
+            ':email' => $email
+        ]);
+
+        if (count($users) == 0) {
+            return null;
+        }
+
+        return $users[0];
+    }
+
     /**
      * @sql VARCHAR(512) NOT NULL
      * @var string
@@ -22,7 +39,7 @@ class User extends BaseModelId
     public $givenName;
 
     /**
-     * @sal VARCHAR(64) NOT NULL
+     * @sql VARCHAR(64) NOT NULL
      * @var string
      */
     public $familyName;

@@ -5,8 +5,9 @@ use App\Models\AssetTag;
 use App\Models\Category;
 use App\Models\File;
 use App\Models\Tag;
-use App\Models\User;
-use App\Models\UserMeta;
+use App\Models\Auth\User;
+use App\Models\Auth\UserMeta;
+use App\Models\Auth\LoginSession;
 
 require_once __DIR__ . '/../autoload.php';
 
@@ -20,4 +21,13 @@ function echoError(Exception $e): void
     echoLine(get_class($e) . ": " . $e->getMessage());
 }
 
-const ALL_MODELS = [Asset::class, AssetTag::class, Category::class, File::class, Tag::class, User::class, UserMeta::class];
+const ALL_MODELS = [
+    Asset::class,
+    AssetTag::class,
+    Category::class,
+    File::class,
+    Tag::class,
+    User::class,
+    UserMeta::class,
+    LoginSession::class,
+];

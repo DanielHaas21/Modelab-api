@@ -6,14 +6,6 @@ use App\Router\Request;
 use App\Router\Response;
 use App\Router\Router;
 
-$router = new Router();
-
-require_once __DIR__ . '/routes/categoryRoutes.php';
-require_once __DIR__ . '/routes/tagRoutes.php';
-require_once __DIR__ . '/routes/assetRoutes.php';
-require_once __DIR__ . '/routes/fileRoutes.php';
-require_once __DIR__ . '/routes/userRoutes.php';
-
 // things go bomboclat if this isnt here bcs preflight cors
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
@@ -24,15 +16,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     exit();
 }
 
-$router->AddGET('/', function (Request $req, Response $res): void {
-    $res->SetText('Modelab API');
-});
+$router = new Router();
 
-$router->AddGET('/info', function (Request $req, Response $res): void {
+require_once __DIR__ . '/routes/categoryRoutes.php';
+require_once __DIR__ . '/routes/tagRoutes.php';
+require_once __DIR__ . '/routes/assetRoutes.php';
+require_once __DIR__ . '/routes/fileRoutes.php';
+require_once __DIR__ . '/routes/userRoutes.php';
+
+$router->AddGET('/', function (Request $req, Response $res): void {
     $phpVersion = phpversion();
 
-    $res->SetText("php: $phpVersion");
+    $res->SetText('Modelab API, php: ' . $phpVersion);
 });
-
 
 $router->DispatchRequest(Request::GetServerRequestURI());

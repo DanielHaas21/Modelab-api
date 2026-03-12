@@ -4,6 +4,21 @@ namespace App\Router;
 
 use ErrorException;
 
+class RouteCallbacks
+{
+    /** @var Closure(Request $req, Response $res): void */
+    public $callback;
+
+    /** @var ?Closure(Request $req, Response $res): void */
+    public $middleware;
+
+    public function __construct(\Closure $callback, ?\Closure $middleware)
+    {
+        $this->callback = $callback;
+        $this->middleware = $middleware;
+    }
+}
+
 /**
  * Defines a route
  */
@@ -71,7 +86,7 @@ class RouteDefinition
     private $uriDefinition;
     /**
      * Array of supported methods
-     * @var array<string, callable(Request $req, Response $res): void>
+     * @var array<string, RouteCallbacks>
      */
     private $methods;
 
@@ -114,17 +129,18 @@ class RouteDefinition
     /**
      * Defines a method under this route
      * @param string $method HTTP method
-     * @param callable(Request $req, Response $res): void $callback
+     * @param \Closure(Request $req, Response $res): void $callback
+     * @param ?\Closure(Request $req, Response $res): void $middleware
      * @throws \ErrorException Thrown if route is already defined
      * @return void
      */
-    public function DefineMethod(string $method, callable $callback): void
+    public function DefineMethod(string $method, \Closure $callback, ?\Closure $middleware): void
     {
         if ($this->IsMethodDefined($method)) {
             throw new ErrorException('Route ' . $method . ' \'' . $this->uriDefinition . '\' is already defined');
         }
 
-        $this->methods[$method] = $callback;
+        $this->methods[$method] = new RouteCallbacks($callback, $middleware);
     }
 
     /**
@@ -151,9 +167,9 @@ class RouteDefinition
      * Gets the callback for a given method
      * @param string $method HTTP method
      * @throws \ErrorException Thrown if method is not defined
-     * @return callable(Request $req, Response $res): void
+     * @return RouteCallbacks
      */
-    public function GetMethodCallback(string $method): callable
+    public function GetMethodCallback(string $method): RouteCallbacks
     {
         if (! $this->IsMethodDefined($method)) {
             throw new ErrorException('Route \'' . $this->uriDefinition . '\' has no method ' . $method . '');

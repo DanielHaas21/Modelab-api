@@ -12,9 +12,9 @@ use App\Router\Response;
 class CategoryController
 {
     /**
-     * @return (callable(Request, Response):void)
+     * @return (\Closure(Request $req, Response $res): void)
      */
-    public static function SelectAll(): callable
+    public static function SelectAll(): \Closure
     {
         return function (Request $req, Response $res): void {
             /**
@@ -33,9 +33,9 @@ class CategoryController
     }
 
     /**
-     * @return (callable(Request, Response):void)
+     * @return (\Closure(Request $req, Response $res): void)
      */
-    public static function Select(): callable
+    public static function Select(): \Closure
     {
         return function (Request $req, Response $res): void {
             $variables = $req->GetVariables();
@@ -59,9 +59,9 @@ class CategoryController
     }
 
     /**
-     * @return (callable(Request, Response):void)
+     * @return (\Closure(Request $req, Response $res): void)
      */
-    public static function Create(): callable
+    public static function Create(): \Closure
     {
         return function (Request $req, Response $res): void {
             $data = $req->GetJSON();
@@ -97,9 +97,9 @@ class CategoryController
     }
 
     /**
-     * @return (callable(Request, Response):void)
+     * @return (\Closure(Request $req, Response $res): void)
      */
-    public static function Delete(): callable
+    public static function Delete(): \Closure
     {
         return function (Request $req, Response $res): void {
             $variables = $req->GetVariables();

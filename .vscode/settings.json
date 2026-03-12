@@ -1,8 +1,8 @@
 {
   "php-cs-fixer.executablePath": "${workspaceFolder}/.vscode/php-cs-fixer.phar",
   "intelephense.environment.phpVersion": "8.5.1",
-  "editor.indentSize": 2,
-  "editor.tabSize": 2,
+  "editor.indentSize": 4,
+  "editor.tabSize": 4,
   "[php]": {
     "editor.formatOnSave": true,
     "editor.defaultFormatter": "junstyle.php-cs-fixer"

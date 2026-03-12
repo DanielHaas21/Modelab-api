@@ -6,39 +6,54 @@ require_once __DIR__ . '/google-api-php-client--PHP7.0/vendor/autoload.php';
 require_once __DIR__ . '/../../../config/keys.php';
 
 use Google_Client;
+use Google_Service_Oauth2;
 
 class GoogleAuth
 {
     /**
-     * Gets user from the Google api client
-     * @param mixed $idToken Credential of the user
+     * Gets user from the Google api client using an Access Token
+     * @param string|null $accessToken The token received from useGoogleLogin
      * @return array{error: string, user: ?GoogleUser, success: bool}
      */
-    public function Login(?string $idToken): array
+    public static function Login(?string $accessToken): array
     {
-        if ($idToken === null) {
+        if ($accessToken === null) {
             return [
                 'success' => false,
-                'error' => 'No ID token',
+                'error' => 'No Access token',
                 'user' => null
             ];
         }
 
         $client = new Google_Client(['client_id' => KEYS_CONFIG['google']['clientId']]);
-        $payload = $client->verifyIdToken($idToken);
+        $client->setAccessToken($accessToken);
 
-        if (!$payload) {
+        $oauth2 = new Google_Service_Oauth2($client);
+
+        try {
+            $userinfo = $oauth2->userinfo->get();
+
+            $payload = [
+                'sub' => $userinfo->id,
+                'email' => $userinfo->email,
+                'name' => $userinfo->name,
+                'picture' => $userinfo->picture,
+                'given_name' => $userinfo->givenName,
+                'family_name' => $userinfo->familyName,
+                'email_verified' => $userinfo->verifiedEmail
+            ];
+
+            return [
+                'success' => true,
+                'user' => new GoogleUser($payload),
+                'error' => ''
+            ];
+        } catch (\Exception $e) {
             return [
                 'success' => false,
-                'error' => 'Invalid ID token',
+                'error' => 'Invalid or expired Access token: ' . $e->getMessage(),
                 'user' => null
             ];
         }
-
-        return [
-            'success' => true,
-            'user' => new GoogleUser($payload),
-            'error' => ''
-        ];
     }
 }
