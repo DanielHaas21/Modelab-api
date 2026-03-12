@@ -25,7 +25,26 @@ class GoogleAuth
             ];
         }
 
-        $client = new Google_Client(['client_id' => KEYS_CONFIG['google']['clientId']]);
+        $clientId = KEYS_CONFIG['google']['clientId'];
+
+        // DEVELOPMENT ENVIROMENT ONLY
+        if ($clientId == 'DEV_CLIENT') {
+            return [
+                'success' => true,
+                'user' => new GoogleUser([
+                    'sub' => 'dev-id',
+                    'email' => 'john.doe@test.com',
+                    'name' => 'John Doe',
+                    'given_name' => 'John',
+                    'family_name' => 'Doe',
+                    'picture' => 'https://picsum.photos/128/128',
+                    'email_verified' => true,
+                ]),
+                'error' => ''
+            ];
+        }
+
+        $client = new Google_Client(['client_id' => $clientId]);
         $client->setAccessToken($accessToken);
 
         $oauth2 = new Google_Service_Oauth2($client);
