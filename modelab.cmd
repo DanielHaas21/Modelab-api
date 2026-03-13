@@ -9,26 +9,12 @@ IF "%1"=="" (
     exit /b
 )
 
-IF "%1"=="create-db" (
-    echo  -----------------------------------
-    echo  ^| Executing script: db.bat        ^| 
-    echo  -----------------------------------
-
-    call bin/db.bat
-    
-    echo  -----------------------------------
-    echo  ^|         Execution complete      ^| 
-    echo  -----------------------------------
-
-    exit /b
-)
-
 IF "%1"=="migrate" (
     echo  -----------------------------------
-    echo  ^| Executing script: tables.bat    ^| 
+    echo  ^| Executing script: migrate.bat    ^| 
     echo  -----------------------------------
     
-    call bin/tables.bat
+    call bin/migrate.bat
 
     echo  -----------------------------------
     echo  ^|         Execution complete      ^| 

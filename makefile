@@ -4,10 +4,6 @@ SH_PATH = bin
 
 default:
 	@echo "No action specified"
-
-init-db:
-	@bash $(SH_PATH)/init-db.sh
-
 migrate:
 	@bash $(SH_PATH)/migrate.sh
 
