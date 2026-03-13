@@ -42,7 +42,10 @@ class UserController
              */
             $user = $req->GetMiddlewareData(MiddlewareController::USER_MIDDLEWARE);
 
-            $userMeta = UserMeta::SelectOrCreateUserMeta($user);
+            /**
+            * @var UserMeta
+            */
+            $userMeta = $req->GetMiddlewareData(MiddlewareController::USER_META_MIDDLEWARE);
 
             $res->SetJSON([
                 'user' => self::CreateUserData($user, $userMeta),

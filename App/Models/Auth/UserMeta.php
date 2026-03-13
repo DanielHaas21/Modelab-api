@@ -3,6 +3,7 @@
 namespace App\Models\Auth;
 
 use App\Database\BaseModels\BaseModelId;
+use App\Middleware\Clearance;
 
 class UserMeta extends BaseModelId
 {
@@ -38,4 +39,9 @@ class UserMeta extends BaseModelId
      * @var int
      */
     public $userId;
+
+    public function HasClearance(int $minClearance): bool
+    {
+        return $this->clearance >= $minClearance;
+    }
 }

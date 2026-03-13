@@ -1,6 +1,8 @@
 <?php
 
 use App\Controllers\FileController;
+use App\Middleware\Clearance;
+use App\Middleware\MiddlewareController;
 use App\Router\Routes;
 
 $routes = new Routes();
