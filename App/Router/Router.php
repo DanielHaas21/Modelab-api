@@ -14,11 +14,6 @@ class Router
      * @var Routes
      */
     private $routes;
-    /**
-     * Middleware callbacks
-     * @var (callable(Request $req, Response $res): void)[]
-     */
-    private $middleware = [];
 
     /**
      * Initializes the router
@@ -49,20 +44,18 @@ class Router
                 throw new RequestError(405, 'server', 'Method ' . $method . ' not allowed for \'' . $requestUri . '\'');
             }
 
-            $callback  = $route_definition->GetMethodCallback($method);
+            $routeCallbacks  = $route_definition->GetMethodCallback($method);
             $variables = $route_definition->GetVariables($requestUri);
 
             $request = new Request($requestUri, $variables);
 
-            foreach ($this->middleware as $middleware) {
+            if ($routeCallbacks->middleware != null) {
+                $middleware = $routeCallbacks->middleware;
                 $middleware($request, $response);
-                if ($response->HasResponse()) {
-                    break;
-                }
-
             }
 
-            if (! $response->HasResponse()) {
+            if (!$response->HasResponse()) {
+                $callback = $routeCallbacks->callback;
                 $callback($request, $response);
             }
 
@@ -73,16 +66,6 @@ class Router
         }
 
         $response->Respond();
-    }
-
-    /**
-     * Adds middleware callback
-     * @param callable(Request $req, Response $res): void $callback
-     * @return void
-     */
-    public function AddMiddleware(callable $callback): void
-    {
-        $this->middleware[] = $callback;
     }
 
     /**
@@ -100,56 +83,61 @@ class Router
     /**
      * Adds a GET route with a callback
      * @param string $route
-     * @param callable(Request $req, Response $res): void $callback
+     * @param \Closure(Request $req, Response $res): void $callback
+     * @param ?\Closure(Request $req, Response $res): void $middleware
      * @return RouteDefinition
      */
-    public function AddGET(string $route, callable $callback): RouteDefinition
+    public function AddGET(string $route, \Closure $callback, ?\Closure $middleware = null): RouteDefinition
     {
-        return $this->routes->AddGET($route, $callback);
+        return $this->routes->AddGET($route, $callback, $middleware);
     }
 
     /**
      * Adds a POST route with a callback
      * @param string $route
-     * @param callable(Request $req, Response $res): void $callback
+     * @param \Closure(Request $req, Response $res): void $callback
+     * @param ?\Closure(Request $req, Response $res): void $middleware
      * @return RouteDefinition
      */
-    public function AddPOST(string $route, callable $callback): RouteDefinition
+    public function AddPOST(string $route, \Closure $callback, ?\Closure $middleware = null): RouteDefinition
     {
-        return $this->routes->AddPOST($route, $callback);
+        return $this->routes->AddPOST($route, $callback, $middleware);
     }
 
     /**
      * Adds a PUT route with a callback
      * @param string $route
-     * @param callable(Request $req, Response $res): void $callback
+     * @param \Closure(Request $req, Response $res): void $callback
+     * @param ?\Closure(Request $req, Response $res): void $middleware
      * @return RouteDefinition
      */
-    public function AddPUT(string $route, callable $callback): RouteDefinition
+    public function AddPUT(string $route, \Closure $callback, ?\Closure $middleware = null): RouteDefinition
     {
-        return $this->routes->AddPUT($route, $callback);
+        return $this->routes->AddPUT($route, $callback, $middleware);
     }
 
     /**
      * Adds a PATCH route with a callback
      * @param string $route
-     * @param callable(Request $req, Response $res): void $callback
+     * @param \Closure(Request $req, Response $res): void $callback
+     * @param ?\Closure(Request $req, Response $res): void $middleware
      * @return RouteDefinition
      */
-    public function AddPATCH(string $route, callable $callback): RouteDefinition
+    public function AddPATCH(string $route, \Closure $callback, ?\Closure $middleware = null): RouteDefinition
     {
-        return $this->routes->AddPATCH($route, $callback);
+        return $this->routes->AddPATCH($route, $callback, $middleware);
     }
 
     /**
      * Adds a DELETE route with a callback
      * @param string $route
-     * @param callable(Request $req, Response $res): void $callback
+     * @param \Closure(Request $req, Response $res): void $callback
+     * @param ?\Closure(Request $req, Response $res): void $middleware
      * @return RouteDefinition
      */
-    public function AddDELETE(string $route, callable $callback): RouteDefinition
+    public function AddDELETE(string $route, \Closure $callback, ?\Closure $middleware = null): RouteDefinition
     {
-        return $this->routes->AddDELETE($route, $callback);
+        return $this->routes->AddDELETE($route, $callback, $middleware);
     }
 
 }

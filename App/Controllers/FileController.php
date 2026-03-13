@@ -11,9 +11,9 @@ use App\Router\Response;
 class FileController
 {
     /**
-     * @return (callable(Request, Response):void)
+     * @return (\Closure(Request $req, Response $res): void)
      */
-    public static function Select(): callable
+    public static function Select(): \Closure
     {
         return function (Request $req, Response $res): void {
             $variables = $req->GetVariables();

@@ -119,9 +119,9 @@ class AssetController
     }
 
     /**
-     * @return (callable(Request, Response):void)
+     * @return (\Closure(Request $req, Response $res): void)
      */
-    public static function SelectAll(): callable
+    public static function SelectAll(): \Closure
     {
         return function (Request $req, Response $res): void {
             $data = $req->GetJSON();
@@ -165,9 +165,9 @@ class AssetController
     }
 
     /**
-     * @return (callable(Request, Response):void)
+     * @return (\Closure(Request $req, Response $res): void)
      */
-    public static function Search(): callable
+    public static function Search(): \Closure
     {
         return function (Request $req, Response $res): void {
             $data = $req->GetJSON();
@@ -289,9 +289,9 @@ class AssetController
     }
 
     /**
-     * @return (callable(Request, Response):void)
+     * @return (\Closure(Request $req, Response $res): void)
      */
-    public static function Select(): callable
+    public static function Select(): \Closure
     {
         return function (Request $req, Response $res): void {
             $variables = $req->GetVariables();
@@ -321,9 +321,9 @@ class AssetController
     }
 
     /**
-     * @return (callable(Request, Response):void)
+     * @return (\Closure(Request $req, Response $res): void)
      */
-    public static function SelectFiles(): callable
+    public static function SelectFiles(): \Closure
     {
         return function (Request $req, Response $res): void {
             $variables = $req->GetVariables();
@@ -359,9 +359,9 @@ class AssetController
     }
 
     /**
-     * @return (callable(Request, Response):void)
+     * @return (\Closure(Request $req, Response $res): void)
      */
-    public static function Create(): callable
+    public static function Create(): \Closure
     {
         return function (Request $req, Response $res): void {
             $data = $req->GetJSON();
@@ -472,9 +472,9 @@ class AssetController
     }
 
     /**
-     * @return (callable(Request, Response):void)
+     * @return (\Closure(Request $req, Response $res): void)
      */
-    public static function Update(): callable
+    public static function Update(): \Closure
     {
         return function (Request $req, Response $res): void {
             $variables = $req->GetVariables();
@@ -623,9 +623,9 @@ class AssetController
     }
 
     /**
-     * @return (callable(Request, Response):void)
+     * @return (\Closure(Request $req, Response $res): void)
      */
-    public static function Delete(): callable
+    public static function Delete(): \Closure
     {
         return function (Request $req, Response $res): void {
             $variables = $req->GetVariables();
