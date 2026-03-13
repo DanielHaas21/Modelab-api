@@ -1,0 +1,25 @@
+name: Push build into production
+
+on:
+  push:
+    branches: ['main']
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Upload dist via SFTP
+        uses: wlixcc/SFTP-Deploy-Action@v1.2.4
+        with:
+          server: ${{ secrets.SFTP_HOST }}
+          port: ${{ secrets.SFTP_PORT }} # default 22
+          username: ${{ secrets.SFTP_USER }}
+          password: ${{ secrets.SFTP_PASSWORD }} # remove if using SSH key
+          # ssh_private_key: ${{ secrets.SFTP_KEY }} # uncomment for key-based auth
+          local_path: './dist/*'
+          remote_path: "./public/docroot/modelab/"
+          sftp_only: true
