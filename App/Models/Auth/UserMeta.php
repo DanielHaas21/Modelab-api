@@ -3,6 +3,7 @@
 namespace App\Models\Auth;
 
 use App\Database\BaseModels\BaseModelId;
+use Clearance;
 
 class UserMeta extends BaseModelId
 {
@@ -21,7 +22,7 @@ class UserMeta extends BaseModelId
         if ($userMeta == null) {
             $userMeta = new UserMeta();
             $userMeta->userId = $user->id;
-            $userMeta->clearance = 2;
+            $userMeta->clearance = Clearance::ADMIN;
         }
 
         return $userMeta;
