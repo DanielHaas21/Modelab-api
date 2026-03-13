@@ -3,7 +3,6 @@
 namespace App\Models\Auth;
 
 use App\Database\BaseModels\BaseModelId;
-use Clearance;
 
 class UserMeta extends BaseModelId
 {

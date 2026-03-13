@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Models\Auth;
+
 class Clearance
 {
     public const GUEST = 1;
