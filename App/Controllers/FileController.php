@@ -204,7 +204,9 @@ class FileController
     public static function SelectSupportedFileTypes(): \Closure
     {
         return function (Request $req, Response $res): void {
-            $res->SetJSON(FILES_CONFIG['supportedTypes']);
+            $res->SetJSON([
+                'supportedFileTypes' => FILES_CONFIG['supportedTypes'],
+            ]);
         };
     }
 

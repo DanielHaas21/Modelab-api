@@ -343,7 +343,7 @@ class AssetController
                 return [
                     'id' => $file->id,
                     'name' => $file->name,
-                    'type' => $file->type,
+                    'fileType' => $file->type,
                     'isHidden' => $file->isHidden,
                     'isMain' => $file->isMain,
                     'isPreview' => $file->id == $asset->previewFileId
