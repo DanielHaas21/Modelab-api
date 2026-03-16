@@ -556,7 +556,7 @@ class AssetController
 
             $asset->name = $name;
             $asset->description = $description;
-            $author->author = $author;
+            $asset->author = $author;
             $asset->categoryId = $categoryId;
 
             $currentTime = new \DateTime();
