@@ -434,9 +434,9 @@ class AssetController
             self::SetupDataDirectory();
 
             $asset = new Asset();
-            $asset->name = $name;
-            $asset->description = $description;
-            $asset->author = $author;
+            $asset->name = trim($name);
+            $asset->description = trim($description);
+            $asset->author = $author == null ? null : trim($author);
 
             $asset->categoryId = $categoryId;
             $asset->uploaderId = $user->id;
@@ -509,8 +509,8 @@ class AssetController
             DataValidator::ValidateFieldsAre(DataValidator::REQUIRED, $data, ['name', 'description', 'author', 'categoryId']);
             DataValidator::ValidateFieldsAre(DataValidator::NUMERIC, $data, ['categoryId']);
 
-            $name = $data['name'];
-            $description = $data['description'];
+            $name = trim($data['name']);
+            $description = trim($data['description']);
             $author = $data['author'];
             $categoryId = intval($data['categoryId']);
             $tagIds = $data['tagIds'] ?? [];
@@ -556,7 +556,7 @@ class AssetController
 
             $asset->name = $name;
             $asset->description = $description;
-            $author->author = $author;
+            $asset->author = $author == null ? null : trim($author);
             $asset->categoryId = $categoryId;
 
             $currentTime = new \DateTime();
