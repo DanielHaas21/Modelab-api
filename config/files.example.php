@@ -16,7 +16,7 @@ const FILES_CONFIG = [
         'audio' => [
             'audio/ogg', // OGG
             'audio/mpeg', // MP3
-            'audio/wav', // WAV
+            'audio/wave', // WAV
             'audio/flac', // FLAC
         ],
         'image' => [
