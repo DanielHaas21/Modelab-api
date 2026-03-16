@@ -7,9 +7,9 @@ use App\Router\Response;
 use App\Router\Router;
 
 // things go bomboclat if this isnt here bcs preflight cors
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type, Authorization");
+header("Access-Control-Allow-Origin: *", true);
+header("Access-Control-Allow-Methods: GET, POST, OPTIONS", true);
+header("Access-Control-Allow-Headers: Content-Type, Authorization", true);
 
 if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     http_response_code(200);
