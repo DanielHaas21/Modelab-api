@@ -19,6 +19,12 @@ class Asset extends BaseModelId
     public $description;
 
     /**
+     * @sql VARCHAR(128)
+     * @var string|null
+     */
+    public $author;
+
+    /**
      * @sql INTEGER NOT NULL
      * @var int
      */
@@ -41,4 +47,16 @@ class Asset extends BaseModelId
      * @var int
      */
     public $previewFileId;
+
+    /**
+     * @sql DATETIME NOT NULL
+     * @var string
+     */
+    public $created;
+
+    /**
+     * @sql DATETIME NOT NULL
+     * @var string
+     */
+    public $updated;
 }

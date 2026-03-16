@@ -3,8 +3,10 @@
 namespace App\Controllers;
 
 use App\Database\SQL;
+use App\Middleware\MiddlewareController;
 use App\Models\Asset;
 use App\Models\AssetTag;
+use App\Models\Auth\User;
 use App\Models\Category;
 use App\Models\File;
 use App\Models\Tag;
@@ -109,12 +111,15 @@ class AssetController
     {
         return [
             'id' => $asset->id,
-            'name' => $asset-> name,
-            'description' => $asset-> description,
+            'name' => $asset->name,
+            'description' => $asset->description,
+            'author' => $asset->author,
             'category' => $category->GetData(),
             'tags' => array_map(function ($assetTag) {
                 return Tag::SelectModel($assetTag->tagId)->GetData();
-            }, $tags)
+            }, $tags),
+            'created' => $asset->created,
+            'updated' => $asset->updated,
         ];
     }
 
@@ -181,6 +186,7 @@ class AssetController
             $descriptionQuery = $data['descriptionQuery'] ?? '';
             $categoryQuery = $data['categoryQuery'] ?? '';
             $tagQuery = $data['tagQuery'] ?? '';
+            $authorQuery = $data['authorQuery'] ?? '';
 
             if ($countPerPage <= 0 || $countPerPage > self::MAX_COUNT_PER_PAGE) {
                 throw RequestError::CreateFieldError(416, 'count', '%key% must be in range (1-' . self::MAX_COUNT_PER_PAGE . ')');
@@ -204,6 +210,12 @@ class AssetController
             if (strlen($descriptionQuery) != 0) {
                 $searchConditions[] = "description LIKE CONCAT('%', :descriptionQuery, '%')";
                 $searchParams[':descriptionQuery'] = $descriptionQuery;
+            }
+
+            // Query author
+            if (strlen($authorQuery) != 0) {
+                $searchConditions[] = "author LIKE CONCAT('%', :authorQuery, '%')";
+                $searchParams[':authorQuery'] = $authorQuery;
             }
 
             // Query categoryId
@@ -364,13 +376,19 @@ class AssetController
     public static function Create(): \Closure
     {
         return function (Request $req, Response $res): void {
+            /**
+             * @var User
+             */
+            $user = $req->GetMiddlewareData(MiddlewareController::USER_MIDDLEWARE);
+
             $data = $req->GetJSON();
 
-            DataValidator::ValidateFieldsAre(DataValidator::REQUIRED, $data, ['name', 'description', 'categoryId']);
+            DataValidator::ValidateFieldsAre(DataValidator::REQUIRED, $data, ['name', 'description', 'author', 'categoryId']);
             DataValidator::ValidateFieldsAre(DataValidator::NUMERIC, $data, ['categoryId']);
 
             $name = $data['name'];
             $description = $data['description'];
+            $author = $data['author'];
             $categoryId = intval($data['categoryId']);
             $tagIds = $data['tagIds'] ?? [];
             $filesMeta = $data['filesMeta'] ?? [];
@@ -418,9 +436,14 @@ class AssetController
             $asset = new Asset();
             $asset->name = $name;
             $asset->description = $description;
+            $asset->author = $author;
 
             $asset->categoryId = $categoryId;
-            $asset->uploaderId = 0; // @TODO Add based on user
+            $asset->uploaderId = $user->id;
+
+            $currentTime = new \DateTime();
+            $asset->created = $currentTime->format('Y-m-d H:i:s');
+            $asset->updated = $currentTime->format('Y-m-d H:i:s');
 
             $asset->Insert();
 
@@ -483,11 +506,12 @@ class AssetController
             DataValidator::ValidateFieldsAre([DataValidator::REQUIRED, DataValidator::NUMERIC], $variables, ['id']);
             $id = intval($variables['id']);
 
-            DataValidator::ValidateFieldsAre(DataValidator::REQUIRED, $data, ['name', 'description', 'categoryId']);
+            DataValidator::ValidateFieldsAre(DataValidator::REQUIRED, $data, ['name', 'description', 'author', 'categoryId']);
             DataValidator::ValidateFieldsAre(DataValidator::NUMERIC, $data, ['categoryId']);
 
             $name = $data['name'];
             $description = $data['description'];
+            $author = $data['author'];
             $categoryId = intval($data['categoryId']);
             $tagIds = $data['tagIds'] ?? [];
             $filesMeta = $data['filesMeta'] ?? [];
@@ -532,7 +556,12 @@ class AssetController
 
             $asset->name = $name;
             $asset->description = $description;
+            $author->author = $author;
             $asset->categoryId = $categoryId;
+
+            $currentTime = new \DateTime();
+            $asset->created = $currentTime->format('Y-m-d H:i:s');
+            $asset->updated = $currentTime->format('Y-m-d H:i:s');
 
             $asset->Update();
 
