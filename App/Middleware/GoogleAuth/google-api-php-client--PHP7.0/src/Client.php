@@ -36,13 +36,11 @@ use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Ring\Client\StreamHandler;
 use InvalidArgumentException;
 use LogicException;
-use Monolog\Handler\StreamHandler as MonologStreamHandler;
-use Monolog\Handler\SyslogHandler as MonologSyslogHandler;
-use Monolog\Logger;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use UnexpectedValueException;
 
 /**
@@ -1130,15 +1128,7 @@ class Client
 
     protected function createDefaultLogger()
     {
-        $logger = new Logger('google-api-php-client');
-        if ($this->isAppEngine()) {
-            $handler = new MonologSyslogHandler('app', LOG_USER, Logger::NOTICE);
-        } else {
-            $handler = new MonologStreamHandler('php://stderr', Logger::NOTICE);
-        }
-        $logger->pushHandler($handler);
-
-        return $logger;
+        return new NullLogger();
     }
 
     protected function createDefaultCache()
