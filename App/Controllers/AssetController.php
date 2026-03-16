@@ -471,7 +471,10 @@ class AssetController
                 $tmpName = $fileData['tmpName'];
                 $fileName = $fileData['name'];
                 $path = $asset->filesDirectory . '/' . uniqid() . '_' . $fileName;
-                move_uploaded_file($tmpName, $path);
+
+                if (!move_uploaded_file($tmpName, $path)) {
+                    throw new Error('Failed to move uploaded file: \'' . $fileName . '\'');
+                }
 
                 $file = new File();
                 $file->path = $path;
@@ -602,7 +605,6 @@ class AssetController
                         }
                         $file->Delete();
 
-                        // Clear preview link if the preview file was deleted
                         if ($asset->previewFileId == $file->id) {
                             $asset->previewFileId = null;
                             $asset->Update();
@@ -610,7 +612,6 @@ class AssetController
                         continue;
                     }
 
-                    // Explicit 1 or 0 cast for DB update
                     $file->isHidden = $isHidden ? 1 : 0;
                     $file->isMain = $isMain ? 1 : 0;
                     $file->Update();
@@ -623,7 +624,10 @@ class AssetController
                     $tmpName = $fileData['tmpName'];
                     $fileName = $fileData['name'];
                     $path = $asset->filesDirectory . '/' . uniqid() . '_' . $fileName;
-                    move_uploaded_file($tmpName, $path);
+
+                    if (!move_uploaded_file($tmpName, $path)) {
+                        throw new Error('Failed to move uploaded file: \'' . $fileName . '\'');
+                    }
 
                     $file = new File();
                     $file->path = $path;
