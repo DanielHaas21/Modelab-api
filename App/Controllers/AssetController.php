@@ -24,68 +24,82 @@ class AssetController
 
     /**
      * @param array $filesMeta
-     * @return array{isHidden: bool, isMain: bool, isRemoved: bool, name: string, tmpName: string, type: string, file: File|null}
+     * @return array{isHidden: bool, isMain: bool, isRemoved: bool, isPreview: bool, name: string|null, tmpName: string|null, type: string|null, file: File|null}
      */
     private static function ExtractFilesData(array $filesMeta): array
     {
         $filesData = [];
-        if (!isset($_FILES['files'])) {
-            return $filesData;
-        }
-        $uploadedFiles = $_FILES['files'];
-        if (!isset($uploadedFiles['name'])) {
-            return $filesData;
-        }
-        for ($i = 0; $i < count($uploadedFiles['name']); $i++) {
-            $type = $uploadedFiles['type'][$i];
-            $fileName = $uploadedFiles['name'][$i];
-            $tmpName = $uploadedFiles['tmp_name'][$i];
-            $size = $uploadedFiles['size'][$i];
+        $uploadedFiles = $_FILES['files'] ?? null;
+        $uploadIndex = 0;
 
-            $meta = $filesMeta[$i] ?? [];
-
-            if ($size > FILES_CONFIG['maxSizeBytes']) {
-                throw RequestError::CreateFieldError(400, 'files', 'File \'' . $fileName . '\' is too large. Max size: \'' . FILES_CONFIG['maxSizeBytes'] . ' B\'');
-            }
-
-            $foundTypeGroup = null;
-            foreach (FILES_CONFIG['supportedTypes'] as $groupName => $typeGroup) {
-                if (in_array($type, $typeGroup)) {
-                    $foundTypeGroup = $groupName;
-                    break;
-                }
-            }
-
-            if ($foundTypeGroup == null) {
-                throw RequestError::CreateFieldError(400, 'files', 'File \'' . $fileName . '\' has unsupported file type: \'' . $type . '\'');
-            }
-
+        foreach ($filesMeta as $meta) {
+            $id = $meta['id'] ?? null;
             $isHidden = ($meta['isHidden'] ?? false) == true;
             $isMain = ($meta['isMain'] ?? false) == true;
             $isRemoved = ($meta['isRemoved'] ?? false) == true;
             $isPreview = ($meta['isPreview'] ?? false) == true;
 
-            $file = null;
-            $id = $meta['id'] ?? null;
             if ($id != null) {
                 $id = intval($id);
-
                 $file = File::SelectModel($id);
-                if ($file == null) {
-                    throw RequestError::CreateFieldError(404, 'id', 'File with %key%: \'' . $id . '\' doesn\'t exist');
-                }
-            }
 
-            $filesData[] = [
-                'name' => $fileName,
-                'type' => $type,
-                'tmpName' => $tmpName,
-                'isHidden' => $isHidden,
-                'isMain' => $isMain,
-                'isRemoved' => $isRemoved,
-                'isPreview' => $isPreview,
-                'file' => $file
-            ];
+                if ($file == null) {
+                    throw RequestError::CreateFieldError(404, 'filesMeta', 'File with id: \'' . $id . '\' doesn\'t exist');
+                }
+
+                $filesData[] = [
+                    'name' => null,
+                    'type' => null,
+                    'tmpName' => null,
+                    'isHidden' => $isHidden,
+                    'isMain' => $isMain,
+                    'isRemoved' => $isRemoved,
+                    'isPreview' => $isPreview,
+                    'file' => $file
+                ];
+            } else {
+                if ($isRemoved) {
+                    continue;
+                }
+
+                if ($uploadedFiles === null || !isset($uploadedFiles['name'][$uploadIndex])) {
+                    throw RequestError::CreateFieldError(400, 'files', 'Missing file upload for metadata');
+                }
+
+                $type = $uploadedFiles['type'][$uploadIndex];
+                $fileName = $uploadedFiles['name'][$uploadIndex];
+                $tmpName = $uploadedFiles['tmp_name'][$uploadIndex];
+                $size = $uploadedFiles['size'][$uploadIndex];
+
+                if ($size > FILES_CONFIG['maxSizeBytes']) {
+                    throw RequestError::CreateFieldError(400, 'files', 'File \'' . $fileName . '\' is too large. Max size: \'' . FILES_CONFIG['maxSizeBytes'] . ' B\'');
+                }
+
+                $foundTypeGroup = null;
+                foreach (FILES_CONFIG['supportedTypes'] as $groupName => $typeGroup) {
+                    if (in_array($type, $typeGroup)) {
+                        $foundTypeGroup = $groupName;
+                        break;
+                    }
+                }
+
+                if ($foundTypeGroup == null) {
+                    throw RequestError::CreateFieldError(400, 'files', 'File \'' . $fileName . '\' has unsupported file type: \'' . $type . '\'');
+                }
+
+                $filesData[] = [
+                    'name' => $fileName,
+                    'type' => $type,
+                    'tmpName' => $tmpName,
+                    'isHidden' => $isHidden,
+                    'isMain' => $isMain,
+                    'isRemoved' => false,
+                    'isPreview' => $isPreview,
+                    'file' => null
+                ];
+
+                $uploadIndex++;
+            }
         }
 
         return $filesData;
@@ -200,25 +214,21 @@ class AssetController
 
             $tableName = Asset::GetTableName();
 
-            // Query name
             if (strlen($nameQuery) != 0) {
                 $searchConditions[] = "name LIKE CONCAT('%', :nameQuery, '%')";
                 $searchParams[':nameQuery'] = $nameQuery;
             }
 
-            // Query description
             if (strlen($descriptionQuery) != 0) {
                 $searchConditions[] = "description LIKE CONCAT('%', :descriptionQuery, '%')";
                 $searchParams[':descriptionQuery'] = $descriptionQuery;
             }
 
-            // Query author
             if (strlen($authorQuery) != 0) {
                 $searchConditions[] = "author LIKE CONCAT('%', :authorQuery, '%')";
                 $searchParams[':authorQuery'] = $authorQuery;
             }
 
-            // Query categoryId
             if (strlen($categoryQuery) != 0) {
                 $categoryQueries = array_map(function ($query) {
                     $query = trim($query);
@@ -231,7 +241,6 @@ class AssetController
                 $searchConditions[] = "categoryId IN (" . join(',', $categoryQueries) . ")";
             }
 
-            // Query tagIds, must match all
             if (strlen($tagQuery) != 0) {
                 $tagQueries = array_map(function ($query) {
                     $query = trim($query);
@@ -383,12 +392,12 @@ class AssetController
 
             $data = $req->GetJSON();
 
-            DataValidator::ValidateFieldsAre(DataValidator::REQUIRED, $data, ['name', 'description', 'author', 'categoryId']);
+            DataValidator::ValidateFieldsAre(DataValidator::REQUIRED, $data, ['name', 'description', 'categoryId']);
             DataValidator::ValidateFieldsAre(DataValidator::NUMERIC, $data, ['categoryId']);
 
             $name = $data['name'];
             $description = $data['description'];
-            $author = $data['author'];
+            $author = $data['author'] ?? null;
             $categoryId = intval($data['categoryId']);
             $tagIds = $data['tagIds'] ?? [];
             $filesMeta = $data['filesMeta'] ?? [];
@@ -396,7 +405,7 @@ class AssetController
             if (strlen($name) == 0 || strlen($name) > 128) {
                 throw RequestError::CreateFieldError(400, 'name', '%key% must have a length between (1-128)');
             }
-            if (strlen($description) == 0 || strlen($description) > 320) {
+            if (mb_strlen($description) == 0 || mb_strlen($description) > 320) {
                 throw RequestError::CreateFieldError(400, 'description', '%key% must have a length between (1-320)');
             }
 
@@ -436,7 +445,8 @@ class AssetController
             $asset = new Asset();
             $asset->name = trim($name);
             $asset->description = trim($description);
-            $asset->author = $author == null ? null : trim($author);
+            $description = str_replace("\r\n", "\n", $description);
+            $asset->author = ($author === null || trim($author) === '') ? null : trim($author);
 
             $asset->categoryId = $categoryId;
             $asset->uploaderId = $user->id;
@@ -506,12 +516,14 @@ class AssetController
             DataValidator::ValidateFieldsAre([DataValidator::REQUIRED, DataValidator::NUMERIC], $variables, ['id']);
             $id = intval($variables['id']);
 
-            DataValidator::ValidateFieldsAre(DataValidator::REQUIRED, $data, ['name', 'description', 'author', 'categoryId']);
+            DataValidator::ValidateFieldsAre(DataValidator::REQUIRED, $data, ['name', 'description', 'categoryId']);
             DataValidator::ValidateFieldsAre(DataValidator::NUMERIC, $data, ['categoryId']);
 
             $name = trim($data['name']);
             $description = trim($data['description']);
-            $author = $data['author'];
+            $description = str_replace("\r\n", "\n", $description);
+
+            $author = $data['author'] ?? null;
             $categoryId = intval($data['categoryId']);
             $tagIds = $data['tagIds'] ?? [];
             $filesMeta = $data['filesMeta'] ?? [];
@@ -519,8 +531,8 @@ class AssetController
             if (strlen($name) == 0 || strlen($name) > 128) {
                 throw RequestError::CreateFieldError(400, 'name', '%key% must have a length between (1-128)');
             }
-            if (strlen($description) == 0 || strlen($description) > 320) {
-                throw RequestError::CreateFieldError(400, 'description', '%key% must have a length between (1-320)');
+            if (mb_strlen($description) == 0 || mb_strlen($description) > 320) {
+                throw RequestError::CreateFieldError(400, 'description', '%key% must have a length between (1-320)' . mb_strlen($description));
             }
 
             $category = Category::SelectModel($categoryId);
@@ -556,11 +568,10 @@ class AssetController
 
             $asset->name = $name;
             $asset->description = $description;
-            $asset->author = $author == null ? null : trim($author);
+            $asset->author = ($author === null || trim($author) === '') ? null : trim($author);
             $asset->categoryId = $categoryId;
 
             $currentTime = new \DateTime();
-            $asset->created = $currentTime->format('Y-m-d H:i:s');
             $asset->updated = $currentTime->format('Y-m-d H:i:s');
 
             $asset->Update();
@@ -575,6 +586,8 @@ class AssetController
                 $isRemoved = $fileData['isRemoved'];
                 $isHidden = $fileData['isHidden'];
                 $isMain = $fileData['isMain'];
+                $isPreview = $fileData['isPreview'];
+
                 if ($file != null) {
                     if ($file->assetId != $asset->id) {
                         throw RequestError::CreateFieldError(
@@ -583,18 +596,29 @@ class AssetController
                             'File with id: \'' . $file->id . '\' doesn\'t belong to asset with id: \'' . $asset->id . '\''
                         );
                     }
-
                     if ($isRemoved) {
-                        if (!unlink($file->path)) {
+                        if (file_exists($file->path) && !unlink($file->path)) {
                             throw new Error('Failed to delete asset file with id: \'' . $file->id . '\'');
                         }
-
                         $file->Delete();
+
+                        // Clear preview link if the preview file was deleted
+                        if ($asset->previewFileId == $file->id) {
+                            $asset->previewFileId = null;
+                            $asset->Update();
+                        }
                         continue;
                     }
 
-                    $file->isHidden = $isHidden;
-                    $file->isMain = $isMain;
+                    // Explicit 1 or 0 cast for DB update
+                    $file->isHidden = $isHidden ? 1 : 0;
+                    $file->isMain = $isMain ? 1 : 0;
+                    $file->Update();
+
+                    if ($isPreview) {
+                        $asset->previewFileId = $file->id;
+                        $asset->Update();
+                    }
                 } else {
                     $tmpName = $fileData['tmpName'];
                     $fileName = $fileData['name'];
@@ -609,7 +633,12 @@ class AssetController
                     $file->isHidden = $fileData['isHidden'] ? 1 : 0;
                     $file->assetId = $asset->id;
 
-                    $file->Insert();
+                    $fileId = $file->Insert();
+
+                    if ($isPreview) {
+                        $asset->previewFileId = $fileId;
+                        $asset->Update();
+                    }
                 }
             }
 
@@ -678,14 +707,14 @@ class AssetController
                 ':assetId' => $asset->id
             ]);
             foreach ($files as $file) {
-                if (!unlink($file->path)) {
+                if (file_exists($file->path) && !unlink($file->path)) {
                     throw new Error('Failed to delete asset file with id: \'' . $file->id . '\'');
                 }
 
                 $file->Delete();
             }
 
-            if (!rmdir($asset->filesDirectory)) {
+            if (is_dir($asset->filesDirectory) && !rmdir($asset->filesDirectory)) {
                 throw new Error('Failed to delete asset directory');
             }
 
