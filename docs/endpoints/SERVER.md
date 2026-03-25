@@ -62,10 +62,12 @@ Returns an overview of the server.
 
 ```json
 {
-    "timestamp": 1774446217, // server local timestamp
-    "services": {
-        "database": true // DB status
-    },
-    "version": "1.0" // API version
+    "health": {
+        "timestamp": 1774446217, // server local timestamp
+        "services": {
+            "database": true // DB status
+        },
+        "version": "1.0" // API version
+    }
 }
 ```

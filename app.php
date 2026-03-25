@@ -33,9 +33,11 @@ $router->AddGET('/', function (Request $req, Response $res): void {
 $router->AddPOST('/health', function (Request $req, Response $res): void {
     $dbActive = SQL::MiscCheckStatus();
     $res->SetJSON([
-        'timestamp' => time(),
-        'services' => ['database' => $dbActive],
-        'version' => '1.0'
+        'health' => [
+            'timestamp' => time(),
+            'services' => ['database' => $dbActive],
+            'version' => '1.0'
+        ]
     ]);
 });
 
