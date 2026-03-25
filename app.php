@@ -30,7 +30,7 @@ $router->AddGET('/', function (Request $req, Response $res): void {
     $res->SetText('Modelab API');
 });
 
-$router->AddGET('/health', function (Request $req, Response $res): void {
+$router->AddPOST('/health', function (Request $req, Response $res): void {
     $dbActive = SQL::MiscCheckStatus();
     $res->SetJSON([
         'timestamp' => time(),
