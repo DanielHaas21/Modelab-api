@@ -10,12 +10,16 @@ class DBLogHandler implements ILogHandler
 {
     public function HandleLog(Log $log)
     {
-        $dbLog = new DBLog();
-        $dbLog->status = $log->GetStatus();
-        $dbLog->message = $log->GetMessage();
-        $dbLog->origin = $log->GetOrigin();
-        $dbLog->date = $log->GetDate()->format('Y-m-d H:i:s');
+        try {
+            $dbLog = new DBLog();
+            $dbLog->status = $log->GetStatus();
+            $dbLog->message = $log->GetMessage();
+            $dbLog->origin = $log->GetOrigin();
+            $dbLog->date = $log->GetDate()->format('Y-m-d H:i:s');
 
-        DBLog::InsertModel($dbLog);
+            DBLog::InsertModel($dbLog);
+        } catch (\Exception $e) {
+            // pass if DB has failed
+        }
     }
 }

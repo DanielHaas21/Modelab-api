@@ -198,8 +198,8 @@ class AssetController
 
             $nameQuery = $data['nameQuery'] ?? '';
             $descriptionQuery = $data['descriptionQuery'] ?? '';
-            $categoryQuery = $data['categoryQuery'] ?? '';
-            $tagQuery = $data['tagQuery'] ?? '';
+            $categoryQuery = $data['categoryQuery'] ?? [];
+            $tagQuery = $data['tagQuery'] ?? [];
             $authorQuery = $data['authorQuery'] ?? '';
 
             if ($countPerPage <= 0 || $countPerPage > self::MAX_COUNT_PER_PAGE) {
@@ -229,33 +229,31 @@ class AssetController
                 $searchParams[':authorQuery'] = $authorQuery;
             }
 
-            if (strlen($categoryQuery) != 0) {
-                $categoryQueries = array_map(function ($query) {
-                    $query = trim($query);
-                    if (!is_numeric($query)) {
-                        throw RequestError::CreateFieldError(400, 'categoryQuery', '%key% has a non numeric id');
+            if (is_array($categoryQuery) && count($categoryQuery) > 0) {
+                $categoryIds = array_map(function ($id) {
+                    if (!is_numeric($id)) {
+                        throw RequestError::CreateFieldError(400, 'categoryQuery', 'All items of %key% must be numeric');
                     }
-                    return intval($query);
-                }, explode(',', $categoryQuery));
+                    return intval($id);
+                }, $categoryQuery);
 
-                $searchConditions[] = "categoryId IN (" . join(',', $categoryQueries) . ")";
+                $searchConditions[] = "categoryId IN (" . join(',', $categoryIds) . ")";
             }
 
-            if (strlen($tagQuery) != 0) {
-                $tagQueries = array_map(function ($query) {
-                    $query = trim($query);
-                    if (!is_numeric($query)) {
-                        throw RequestError::CreateFieldError(400, 'tagQuery', '%key% has a non numeric id');
+            if (is_array($tagQuery) && count($tagQuery) > 0) {
+                $tagIds = array_map(function ($id) {
+                    if (!is_numeric($id)) {
+                        throw RequestError::CreateFieldError(400, 'tagQuery', 'All items of %key% must be numeric');
                     }
-                    return intval($query);
-                }, explode(',', $tagQuery));
+                    return intval($id);
+                }, $tagQuery);
 
                 $assetTagTableName = AssetTag::GetTableName();
-                $tagCount = count($tagQueries);
+                $tagCount = count($tagIds);
 
                 $beforeWhereSql[] = "INNER JOIN $assetTagTableName ON $assetTagTableName.assetId = $tableName.id";
 
-                $searchConditions[] = "tagId IN (" . join(',', $tagQueries) . ")";
+                $searchConditions[] = "tagId IN (" . join(',', $tagIds) . ")";
 
                 $afterWhereSql[] = "GROUP BY $tableName.id HAVING COUNT(DISTINCT $assetTagTableName.tagId) = $tagCount";
             }

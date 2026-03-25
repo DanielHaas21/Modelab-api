@@ -7,7 +7,7 @@ use App\Router\Routes;
 
 $routes = new Routes();
 
-$routes->AddGET("/supported", FileController::SelectSupportedFileTypes());
+$routes->AddPOST("/supported", FileController::SelectSupportedFileTypes());
 
 $routes->AddGET("/{id}/preview", FileController::SelectPreview());
 $routes->AddGET("/{id}", FileController::SelectAsset(), MiddlewareController::UserClearanceMiddleware(Clearance::USER));

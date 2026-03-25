@@ -61,12 +61,11 @@ class Router
                 $callback($request, $response);
             }
 
-        } catch (RequestError $error) { // access error, not needed to log
+        } catch (RequestError $error) {
             $response->SetError($error);
+
+            // access error, not needed to log
             // Logger::LogError($error->getMessage(), $error->GetCause());
-        } catch (Throwable $error) { // internal error
-            $response->SetError(new RequestError(500, 'server', 'Internal error'));
-            Logger::LogError($error->getMessage(), 'server');
         }
 
         $response->Respond();

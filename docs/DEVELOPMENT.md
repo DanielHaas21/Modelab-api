@@ -2,6 +2,17 @@
 
 [Back](../README.md)
 
+## Contents
+
+- [Development](#development)
+  - [Contents](#contents)
+  - [Naming convetion](#naming-convetion)
+    - [Files and Directories](#files-and-directories)
+    - [Code](#code)
+  - [Folder structure](#folder-structure)
+  - [Set up development enviroment](#set-up-development-enviroment)
+      - [VS Code](#vs-code)
+
 ## Naming convetion
 
 ### Files and Directories

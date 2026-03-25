@@ -23,6 +23,7 @@ class AdminController
     private static function CreateLogData(Log $log): array
     {
         return [
+            'id' => $log->id,
             'status' => $log->status,
             'origin' => $log->origin,
             'message' => $log->message,
@@ -88,9 +89,13 @@ class AdminController
                 throw RequestError::CreateFieldError(416, 'count', '%key% must be in range (1-' . self::MAX_LOG_COUNT_PER_PAGE . ')');
             }
 
-            $statusQuery = array_filter(explode(',', $data['statusQuery'] ?? ''));
+            $statusQuery = $data['statusQuery'] ?? [];
             $dateStartQuery = $data['dateStartQuery'] ?? '';
             $dateEndQuery = $data['dateEndQuery'] ?? '';
+
+            if (!is_array($statusQuery)) {
+                throw RequestError::CreateFieldError(400, 'statusQuery', '%key% must be an array of strings');
+            }
 
             foreach ($statusQuery as $status) {
                 if (!LogStatus::IsStatus($status)) {

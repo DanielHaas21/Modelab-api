@@ -13,17 +13,18 @@ use App\Router\Response;
 Logger::RegisterHandler(new FileLogHandler(__DIR__ . '/logs'));
 Logger::RegisterHandler(new DBLogHandler());
 
-// Handle compile errors
+// Handle errors
 
+ini_set('display_errors', '0');
+error_reporting(0);
 register_shutdown_function(function () {
     $error = error_get_last();
-    $fatalTypes = [E_ERROR, E_CORE_ERROR, E_COMPILE_ERROR];
+    if ($error !== null) {
+        Logger::LogError($error['message'], $error['file'] . ':' . $error['line']);
 
-    if ($error !== null && in_array($error['type'], $fatalTypes)) {
-        Logger::LogError("FATAL: " . $error['message'], $error['file']);
-
+        // make sure to send a response
         $res = new Response();
-        $res->SetError(new RequestError(500, 'server', 'Internal fatal error'));
+        $res->SetError(new RequestError(500, 'server', 'Internal error'));
         $res->Respond();
     }
 });

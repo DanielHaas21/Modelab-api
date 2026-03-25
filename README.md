@@ -59,4 +59,5 @@ Or for specfic tasks
 ## Docs
 
 - [Development](./docs/DEVELOPMENT.md) - Techical overview
+- [Design](./docs/DESIGN.md) - About the API design
 - [Endpoints](./docs/ENDPOINTS.md) - All API endpoints described

@@ -4,6 +4,8 @@
 
 These endpoints provide general information about the server.
 
+Defined in: [app.php](../../app.php)
+
 ## Contents
 
 - [Server Endpoints](#server-endpoints)
@@ -17,13 +19,13 @@ These endpoints provide general information about the server.
 
 ## Root
 
-The root endpooint returns a static page.
+Returns a static welcome page.
 
-| Feature | Value |
-| ------- | ----- |
-| URI     | /     |
-| Method  | `GET` |
-| Auth    | None  |
+| Feature   | Value |
+| --------- | ----- |
+| URI       | /     |
+| Method    | `GET` |
+| Clearance | Guest |
 
 ### Request
 
@@ -38,15 +40,16 @@ The root endpooint returns a static page.
 ```html
 Modelab API
 ```
+
 ## Health
 
-The health endpooint returns an overview of the server.
+Returns an overview of the server.
 
-| Feature | Value     |
-| ------- | --------- |
-| URI     | `/health` |
-| Method  | `POST`    |
-| Auth    | None      |
+| Feature   | Value     |
+| --------- | --------- |
+| URI       | `/health` |
+| Method    | `POST`    |
+| Clearance | Guest     |
 
 ### Request
 
@@ -59,10 +62,10 @@ The health endpooint returns an overview of the server.
 
 ```json
 {
-  "timestamp": 1774446217, // server local timestamp
-  "services": {
-    "database": true // DB status
-  },
-  "version": "1.0", // API version
+    "timestamp": 1774446217, // server local timestamp
+    "services": {
+        "database": true // DB status
+    },
+    "version": "1.0" // API version
 }
 ```

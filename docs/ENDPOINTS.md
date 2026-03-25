@@ -19,7 +19,12 @@ For `POST` methods the result is always:
 All authorized endpoints use 'Bearer Authentication'.
 The bearer token is the user's specified session token.
 
+This session token expires in 2 days (configured in [LoginSession.MAX_TOKEN_REFRESH_INTERVAL_SECONDS](../App/Models/Auth/LoginSession.php)).
+To make it not expire, it is refreshed each API call.
+
 ## Endpoints
+
+All endpoints are sorted by their clearance.
 
 - [Server](./endpoints/SERVER.md) - General server endpoints, like health
 - [User](./endpoints/USER.md) - Authentication and user data
