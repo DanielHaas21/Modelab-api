@@ -50,6 +50,15 @@ class RequestError extends Error
     }
 
     /**
+     * Returns the error cause
+     * @return string
+     */
+    public function GetCause()
+    {
+        return $this->cause;
+    }
+
+    /**
      * Convert this error to a JSON array
      * @return array{cause: string, code: int, message: string}
      */

@@ -3,27 +3,20 @@
 namespace App\Models\Auth;
 
 use App\Database\BaseModels\BaseModelId;
-use App\Middleware\Clearance;
 
 class UserMeta extends BaseModelId
 {
     /**
      * @param string $email
-     * @return User|null
+     * @return UserMeta|null
      */
-    final public static function SelectOrCreateUserMeta(User $user): UserMeta
+    final public static function SelectUserMeta(User $user): UserMeta
     {
         $userMetas = static::SelectWhereModels('userId = :userId', [
             ':userId' => $user->id
         ]);
 
         $userMeta = count($userMetas) == 0 ? null : $userMetas[0];
-
-        if ($userMeta == null) {
-            $userMeta = new UserMeta();
-            $userMeta->userId = $user->id;
-            $userMeta->clearance = Clearance::ADMIN;
-        }
 
         return $userMeta;
     }

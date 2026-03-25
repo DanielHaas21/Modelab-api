@@ -2,6 +2,7 @@
 
 namespace App\Router;
 
+use App\Helpers\Loggers\Logger;
 use Throwable;
 
 /**
@@ -16,7 +17,8 @@ class Router
     private $routes;
 
     /**
-     * Initializes the router
+     * Initializes the router.
+     * @param mixed $passExceptions Whether the caught exceptions are rethrown again
      */
     public function __construct()
     {
@@ -59,10 +61,12 @@ class Router
                 $callback($request, $response);
             }
 
-        } catch (RequestError $error) {
+        } catch (RequestError $error) { // access error, not needed to log
             $response->SetError($error);
-        } catch (Throwable $error) {
-            $response->SetError(new RequestError(500, 'server', $error->getMessage()));
+            // Logger::LogError($error->getMessage(), $error->GetCause());
+        } catch (Throwable $error) { // internal error
+            $response->SetError(new RequestError(500, 'server', 'Internal error'));
+            Logger::LogError($error->getMessage(), 'server');
         }
 
         $response->Respond();

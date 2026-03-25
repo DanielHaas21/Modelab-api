@@ -67,6 +67,20 @@ class SQL
     }
 
     /**
+     * Checks if the database connection is active and responding
+     * @return bool
+     */
+    public static function MiscCheckStatus(): bool
+    {
+        try {
+            self::InitPDO();
+            return (bool) self::$pdo->query("SELECT 1");
+        } catch (Exception $e) {
+            return false;
+        }
+    }
+
+    /**
      * Runs raw SQL code
      * @param string $sql
      * @param ?array $params Raw parameters, use [":key" => "value"]

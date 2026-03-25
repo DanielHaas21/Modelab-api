@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Middleware\Clearance;
 use App\Middleware\GoogleAuth\GoogleAuth;
 use App\Middleware\GoogleAuth\GoogleUser;
 use App\Middleware\MiddlewareController;
@@ -98,6 +99,18 @@ class UserController
         $user->picture = $googleUser->picture;
 
         $userId = User::InsertModel($user);
+        $user->id = $userId;
+
+        $userMetaCount = count(UserMeta::SelectAllModels());
+        $isFirst = $userMetaCount == 0;
+
+        $userMeta = new UserMeta();
+        $userMeta->userId = $user->id;
+        $userMeta->clearance = $isFirst ? Clearance::OVERLORD : Clearance::USER;
+        $userMetaId = UserMeta::InsertModel($userMeta);
+
+        $user->userMetaId = $userMetaId;
+        User::UpdateModel($user);
 
         return User::SelectModel($userId);
     }

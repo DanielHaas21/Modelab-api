@@ -24,7 +24,7 @@ final class Env
      * @throws Exception
      * @return void
      */
-    public static function Load(string $filePath): void
+    public static function Load(string $filePath = "./env"): void
     {
         if (! file_exists($filePath)) {
             throw new Exception(".env file not found at: $filePath");

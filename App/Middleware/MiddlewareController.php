@@ -32,7 +32,11 @@ class MiddlewareController
             throw RequestError::CreateFieldError(401, 'token', 'Failed to authenticate.');
         }
 
-        $userMeta = UserMeta::SelectOrCreateUserMeta($user);
+        $userMeta = UserMeta::SelectUserMeta($user);
+
+        if ($userMeta == null) {
+            throw RequestError::CreateFieldError(401, 'token', 'Failed to authenticate.');
+        }
 
         $req->SetMiddlewareData(static::USER_MIDDLEWARE, $user);
         $req->SetMiddlewareData(static::USER_META_MIDDLEWARE, $userMeta);
