@@ -8,6 +8,8 @@ use App\Models\Tag;
 use App\Models\Auth\User;
 use App\Models\Auth\UserMeta;
 use App\Models\Auth\LoginSession;
+use App\Models\Config\Log;
+use App\Models\Config\Setting;
 
 require_once __DIR__ . '/../autoload.php';
 
@@ -27,7 +29,11 @@ const ALL_MODELS = [
     Category::class,
     File::class,
     Tag::class,
+
     User::class,
     UserMeta::class,
     LoginSession::class,
+
+    Setting::class,
+    Log::class
 ];

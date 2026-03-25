@@ -11,6 +11,18 @@ final class LogStatus
     public const ERROR = 'error';
     public const DEBUG = 'debug';
 
+    public const ALL_STATUSES = [
+        self::INFO,
+        self::WARNING,
+        self::ERROR,
+        self::DEBUG
+    ];
+
+    public static function IsStatus(string $status)
+    {
+        return \in_array($status, self::ALL_STATUSES, true);
+    }
+
     public static function GetName(string $status)
     {
         switch ($status) {

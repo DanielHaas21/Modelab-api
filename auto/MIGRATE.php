@@ -8,9 +8,6 @@
 use App\Database\Exceptions\DatabaseException;
 use App\Database\Exceptions\SQLExecutionException;
 use App\Database\SQL;
-use App\Models\Asset;
-use App\Models\Category;
-use App\Models\Tag;
 
 require_once __DIR__ . '/utils.php';
 

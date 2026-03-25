@@ -13,7 +13,7 @@ class Asset extends BaseModelId
     public $name;
 
     /**
-     * @sql VARCHAR(320) NOT NULL
+     * @sql TEXT NOT NULL
      * @var string
      */
     public $description;
