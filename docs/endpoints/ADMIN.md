@@ -78,7 +78,7 @@ Returns all logs in a paginated form. The logs are ordered by their id.
   "count": 10, // Maximum amount of items per page
   "statusQuery": ["error", "info"], // valid options are: "error", "info", "warning", "debug"
   "dateStartQuery": "2026-03-16T09:37:05+01:00",
-  "dateStartQuery": "2026-08-16T09:37:05+01:00",
+  "dateEndQuery": "2026-08-16T09:37:05+01:00",
 }
 ```
 
