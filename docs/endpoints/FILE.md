@@ -84,9 +84,11 @@ Returns files metadata.
 
 ```json
 {
-    "id": 3,
-    "name": "house.fbx",
-    "fileType": "application/octet-stream"
+    "meta": {
+        "id": 3,
+        "name": "house.fbx",
+        "fileType": "application/octet-stream"
+    }
 }
 ```
 

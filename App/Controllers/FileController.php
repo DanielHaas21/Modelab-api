@@ -232,7 +232,9 @@ class FileController
                 throw RequestError::CreateFieldError(404, 'id', 'File with %key%: \'' . $id . '\' doesn\'t exist');
             }
 
-            $res->SetJSON(self::CreateFileData($file));
+            $res->SetJSON([
+                'meta' => self::CreateFileData($file),
+            ]);
         };
     }
 
