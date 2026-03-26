@@ -13,10 +13,13 @@ Defined in: [fileRoutes.php](../../routes/fileRoutes.php)
   - [Select Supported File Types](#select-supported-file-types)
     - [Request](#request)
     - [Response](#response)
-  - [Select Preview](#select-preview)
+  - [Select File Metadata](#select-file-metadata)
+    - [Request](#request-1)
     - [Response](#response-1)
-  - [Select](#select)
+  - [Select Preview](#select-preview)
     - [Response](#response-2)
+  - [Select](#select)
+    - [Response](#response-3)
 
 ## Select Supported File Types
 
@@ -57,6 +60,33 @@ Returns all supported file types.
             // ...
         ]
     },
+}
+```
+
+## Select File Metadata
+
+Returns files metadata.
+
+| Feature   | Value               |
+| --------- | ------------------- |
+| URI       | `/file/{id}/meta  ` |
+| Method    | `POST`              |
+| Clearance | Guest               |
+
+### Request
+
+`Content-Type: application/json`
+```json
+{}
+```
+
+### Response
+
+```json
+{
+    "id": 3,
+    "name": "house.fbx",
+    "fileType": "application/octet-stream"
 }
 ```
 

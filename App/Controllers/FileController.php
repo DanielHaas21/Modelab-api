@@ -133,6 +133,19 @@ class FileController
     }
 
     /**
+     * @param File $file
+     * @return array{id: int, name: string, fileType: string}
+     */
+    private static function CreateFileData(File $file): array
+    {
+        return [
+            'id' => $file->id,
+            'name' => $file->name,
+            'fileType' => $file->type,
+        ];
+    }
+
+    /**
      * Returns the file's modified preview.
      * - Image is watermarked
      * - 3D models, Audio and others have their placeholder image
@@ -195,6 +208,31 @@ class FileController
             }
 
             static::HostFile($file);
+        };
+    }
+
+    /**
+    * Returns the files meta.
+    * @return (\Closure(Request $req, Response $res): void)
+    */
+    public static function SelectAssetMeta(): \Closure
+    {
+        return function (Request $req, Response $res): void {
+            $variables = $req->GetVariables();
+
+            DataValidator::ValidateFieldsAre([DataValidator::REQUIRED, DataValidator::NUMERIC], $variables, ['id']);
+            $id = intval($variables['id']);
+
+            /**
+             * @var File
+             */
+            $file = File::SelectModel($id);
+
+            if ($file == null) {
+                throw RequestError::CreateFieldError(404, 'id', 'File with %key%: \'' . $id . '\' doesn\'t exist');
+            }
+
+            $res->SetJSON(self::CreateFileData($file));
         };
     }
 
