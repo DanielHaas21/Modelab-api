@@ -6,13 +6,19 @@ This is an API and backend for [Modelab](https://github.com/DanielHaas21/Modelab
 
 - [Modelab-api](#modelab-api)
   - [Contents](#contents)
-  - [Installation](#installation)
+  - [Documentation](#documentation)
+  - [Setup](#setup)
     - [Prerequisites](#prerequisites)
       - [Windows](#windows)
       - [Linux](#linux)
-  - [Docs](#docs)
 
-## Installation
+## Documentation
+
+- [Development](./docs/DEVELOPMENT.md) - Techical overview
+- [Design](./docs/DESIGN.md) - About the API design
+- [Endpoints](./docs/ENDPOINTS.md) - All API endpoints described
+
+## Setup
 
 ### Prerequisites
 
@@ -55,9 +61,3 @@ Or for specfic tasks
 - `create-db` for creating the database; adjusting the connection string in the PDO.php and config.php is recommended
 - `drop-db` for dropping the database
 - `migrate` for migrating tables
-
-## Docs
-
-- [Development](./docs/DEVELOPMENT.md) - Techical overview
-- [Design](./docs/DESIGN.md) - About the API design
-- [Endpoints](./docs/ENDPOINTS.md) - All API endpoints described
