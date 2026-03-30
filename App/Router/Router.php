@@ -2,7 +2,6 @@
 
 namespace App\Router;
 
-use App\Helpers\Loggers\Logger;
 use Throwable;
 
 /**
@@ -17,55 +16,135 @@ class Router
     private $routes;
 
     /**
-     * Initializes the router.
-     * @param mixed $passExceptions Whether the caught exceptions are rethrown again
+     * All error event callbacks
+     * @var (\Closure(RouterError $error): void)[]
      */
-    public function __construct()
+    private $error_events = [];
+
+    /**
+     * Debug mode returns more information about errors to the API user
+     * @var bool
+     */
+    private $debug_mode;
+
+    /**
+     * Initializes the router.
+     * @param $debug_mode Debug mode returns more information about errors to the API user
+     */
+    public function __construct(bool $debug_mode = false)
     {
         $this->routes = new Routes();
+        $this->debug_mode = $debug_mode;
     }
 
     /**
-     * Dispatches request
-     * @param string $requestUri
+     * Calls all error callbacks and makes a new error response
+     * @param RouterError $error
      * @return void
      */
-    public function DispatchRequest(string $requestUri): void
+    private function RespondWithError(RouterError $error): void
     {
+        /**
+         * @var Throwable[]
+         */
+        $new_errors = [];
+
+        foreach ($this->error_events as $on_error) {
+            try {
+                $on_error($error);
+            } catch (Throwable $e) {
+                $new_errors[] = $e;
+            }
+        }
+
+        $message = $error->getMessage();
+
+        if($this->debug_mode) {
+            $message .= ' | ' . $error->GetDevMessage();
+
+            foreach ($new_errors as $new_error) {
+                $message .= ' | ' . $new_error->getMessage();
+            }
+        }
+
+        $request_error = new RequestError($error->getCode(), 'server', $message);
+
+        $response = new Response();
+        $response->SetError($request_error);
+        $response->Respond();
+    }
+    
+    /**
+     * Dispatches the current request uri
+     * @return void
+     */
+    public function DispatchRequest(): void
+    {
+        $this->DispatchRequestWithUri(Request::GetServerRequestURI());
+    }
+
+    /**
+     * Dispatches a specific request uri
+     * @param string $request_uri
+     * @return void
+     */
+    public function DispatchRequestWithUri(string $request_uri): void
+    {
+        ini_set('display_errors', '0');
+        error_reporting(0);
+        register_shutdown_function(function () {
+            $error = error_get_last();
+            if ($error !== null) {
+                $this->RespondWithError(new RouterError(RouterError::TYPE_FATAL, 500, 'Internal error', $error['message'], $error));
+            }
+        });
+
+        header("Access-Control-Allow-Origin: *", true);
+        header("Access-Control-Allow-Methods: GET, POST, OPTIONS", true);
+        header("Access-Control-Allow-Headers: Content-Type, Authorization", true);
+
+        $method = $_SERVER['REQUEST_METHOD'];
+
+        if ($method == 'OPTIONS') {
+            http_response_code(200);
+            exit();
+        }
+
         $response = new Response();
 
         try {
-            $method           = $_SERVER['REQUEST_METHOD'];
-            $route_definition = $this->routes->FindMatchingRouteDefinition($requestUri);
+            $route_definition = $this->routes->FindMatchingRouteDefinition($request_uri);
 
             if ($route_definition == null) {
-                throw new RequestError(404, 'server', '\'' . $requestUri . '\' not found');
+                throw new RouterError(RouterError::TYPE_ACCESS, 404, '\'' . $request_uri . '\' not found', 'No RouteDefinition matched');
             }
 
-            if (! $route_definition->IsMethodDefined($method)) {
-                throw new RequestError(405, 'server', 'Method ' . $method . ' not allowed for \'' . $requestUri . '\'');
+            if (!$route_definition->IsMethodDefined($method)) {
+                throw new RouterError(RouterError::TYPE_ACCESS, 405, 
+                    'Method ' . $method . ' not allowed for \'' . $request_uri . '\'', 
+                    'Defined methods: ' . join(', ', $route_definition->GetDefinedMethods())
+                );
             }
 
-            $routeCallbacks  = $route_definition->GetMethodCallback($method);
-            $variables = $route_definition->GetVariables($requestUri);
+            $route_callbacks  = $route_definition->GetMethodCallback($method);
+            $variables = $route_definition->GetVariables($request_uri);
 
-            $request = new Request($requestUri, $variables);
+            $request = new Request($request_uri, $variables);
 
-            if ($routeCallbacks->middleware != null) {
-                $middleware = $routeCallbacks->middleware;
+            if ($route_callbacks->middleware != null) {
+                $middleware = $route_callbacks->middleware;
                 $middleware($request, $response);
             }
 
             if (!$response->HasResponse()) {
-                $callback = $routeCallbacks->callback;
+                $callback = $route_callbacks->callback;
                 $callback($request, $response);
             }
 
-        } catch (RequestError $error) {
+        } catch (RouterError $error) {
+            $this->RespondWithError($error);
+        }catch (RequestError $error) {
             $response->SetError($error);
-
-            // access error, not needed to log
-            // Logger::LogError($error->getMessage(), $error->GetCause());
         }
 
         $response->Respond();
@@ -143,4 +222,13 @@ class Router
         return $this->routes->AddDELETE($route, $callback, $middleware);
     }
 
+    /**
+     * Adds an error event callback
+     * @param \Closure(RouterError $error): void $callback
+     * @return void
+     */
+    public function OnError(\Closure $callback): void
+    {
+        $this->error_events[] = $callback;
+    }
 }

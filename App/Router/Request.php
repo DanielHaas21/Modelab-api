@@ -15,16 +15,16 @@ class Request
      */
     public static function GetJSONInput(): array
     {
-        $rawData    = json_decode(file_get_contents('php://input'), true);
-        $serverPost = isset($_POST) ? $_POST : null;
+        $raw_data    = json_decode(file_get_contents('php://input'), true);
+        $server_post = isset($_POST) ? $_POST : null;
 
         $post = [];
-        if ($rawData != null) {
-            $post = array_merge($post, $rawData);
+        if ($raw_data != null) {
+            $post = array_merge($post, $raw_data);
         }
 
-        if ($serverPost != null) {
-            $post = array_merge($post, $serverPost);
+        if ($server_post != null) {
+            $post = array_merge($post, $server_post);
         }
 
         return $post;
@@ -64,12 +64,12 @@ class Request
      */
     public static function GetServerRequestURI(): string
     {
-        $requestUri = explode('?', $_SERVER['REQUEST_URI'])[0];
+        $request_uri = explode('?', $_SERVER['REQUEST_URI'])[0];
         $uriRoot    = self::GetURIRoot();
 
-        $requestUri = substr($requestUri, strlen($uriRoot));
+        $request_uri = substr($request_uri, strlen($uriRoot));
 
-        return RouteDefinition::URI_SEPARATOR . trim($requestUri, RouteDefinition::URI_SEPARATOR);
+        return RouteDefinition::URI_SEPARATOR . trim($request_uri, RouteDefinition::URI_SEPARATOR);
     }
 
     /**
@@ -83,21 +83,24 @@ class Request
      * @var array
      */
     private $variables;
+    
     /**
      * Loaded JSON array
      * @var array
      */
     private $json;
+    
     /**
      * Request headers
      * @var array
      */
     private $headers;
+
     /**
      * Data assigned in middleware
      * @var array<string, object>
      */
-    private $middlewareData;
+    private $middleware_data;
 
     /**
      * Constructs the Request, loads json and headers
@@ -159,8 +162,8 @@ class Request
      */
     public function GetMiddlewareData(string $key): ?object
     {
-        if (isset($this->middlewareData[$key])) {
-            return $this->middlewareData[$key];
+        if (isset($this->middleware_data[$key])) {
+            return $this->middleware_data[$key];
         } else {
             return null;
         }
@@ -172,10 +175,10 @@ class Request
      */
     public function SetMiddlewareData(string $key, object $value): void
     {
-        if (isset($this->middlewareData[$key])) {
+        if (isset($this->middleware_data[$key])) {
             throw new ErrorException('Middleware data \'' . $key . '\' already have a value.');
         }
 
-        $this->middlewareData[$key] = $value;
+        $this->middleware_data[$key] = $value;
     }
 }

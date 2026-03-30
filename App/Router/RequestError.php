@@ -36,17 +36,25 @@ class RequestError extends Error
     private $data;
 
     /**
+     * The encapsulated error
+     * @var \Throwable|null
+     */
+    private $error;
+
+    /**
      * Constructor of the RequestError
      * @param int $code HTTP Status code
      * @param string $cause Cause of the error
      * @param string $message Message of the error
      * @param array $data Other JSON data
+     * @param \Throwable $error The encapsulated error
      */
-    public function __construct(int $code, string $cause, string $message, array $data = [])
+    public function __construct(int $code, string $cause, string $message, array $data = [], \Throwable $error = null)
     {
         parent::__construct($message, $code);
         $this->cause = $cause;
         $this->data = $data;
+        $this->error = $error;
     }
 
     /**
@@ -56,6 +64,15 @@ class RequestError extends Error
     public function GetCause()
     {
         return $this->cause;
+    }
+
+    /**
+     * Returns the encapsulated error
+     * @return \Throwable
+     */
+    public function GetError()
+    {
+        return $this->error;
     }
 
     /**

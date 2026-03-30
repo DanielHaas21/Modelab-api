@@ -16,7 +16,7 @@ class DataValidator
      */
     public static function ValidateFieldsAre($qualities, array $data, ?array $fields = null): void
     {
-        if (! is_array($qualities)) {
+        if (!is_array($qualities)) {
             $qualities = [$qualities];
         }
 

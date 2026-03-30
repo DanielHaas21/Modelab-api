@@ -13,7 +13,7 @@ class Routes
      * Routes defined
      * @var RouteDefinition[]
      */
-    private $routeDefinitions = [];
+    private $route_definitions = [];
 
     /**
      * Tries to find RouteDefinition that matches the URI
@@ -22,7 +22,7 @@ class Routes
      */
     public function FindMatchingRouteDefinition(string $uri): ?RouteDefinition
     {
-        foreach ($this->routeDefinitions as $route_definition) {
+        foreach ($this->route_definitions as $route_definition) {
             if ($route_definition->MatchesWithURI($uri)) {
                 return $route_definition;
             }
@@ -40,16 +40,16 @@ class Routes
      */
     public function AddRoutes(string $routePrefix, Routes $routes): void
     {
-        foreach ($routes->routeDefinitions as $route => $route_definition) {
+        foreach ($routes->route_definitions as $route => $route_definition) {
             $uri = rtrim($routePrefix, RouteDefinition::URI_SEPARATOR) . $route;
 
-            if (isset($this->routeDefinitions[$uri])) {
+            if (isset($this->route_definitions[$uri])) {
                 throw new ErrorException('Trying to define a defined route \'' . $uri . '\'');
             }
 
             $route_definition->ChangeURI($uri);
 
-            $this->routeDefinitions[$uri] = $route_definition;
+            $this->route_definitions[$uri] = $route_definition;
         }
     }
 
@@ -63,13 +63,13 @@ class Routes
      */
     private function AddRoute(string $routeUri, \Closure $callback, ?\Closure $middleware, string $method): RouteDefinition
     {
-        $route_definition = isset($this->routeDefinitions[$routeUri])
-        ? $this->routeDefinitions[$routeUri]
+        $route_definition = isset($this->route_definitions[$routeUri])
+        ? $this->route_definitions[$routeUri]
         : new RouteDefinition($routeUri);
 
         $route_definition->DefineMethod($method, $callback, $middleware);
 
-        $this->routeDefinitions[$routeUri] = $route_definition;
+        $this->route_definitions[$routeUri] = $route_definition;
 
         return $route_definition;
     }

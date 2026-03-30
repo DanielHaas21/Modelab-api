@@ -2,33 +2,57 @@
 
 require_once __DIR__ . '/autoload.php';
 
+use App\Database\SQL;
+use App\Router\Request;
+use App\Router\Response;
+use App\Router\Router;
 use App\Helpers\Loggers\Logger;
 use App\Helpers\Loggers\LogHandlers\DBLogHandler;
 use App\Helpers\Loggers\LogHandlers\FileLogHandler;
-use App\Router\RequestError;
-use App\Router\Response;
+use App\Router\RouterError;
 
-// Configure root logging
+// Configure logging
 
 Logger::RegisterHandler(new FileLogHandler(__DIR__ . '/logs'));
 Logger::RegisterHandler(new DBLogHandler());
 
-// Handle errors
+// Configure router
 
-ini_set('display_errors', '0');
-error_reporting(0);
-register_shutdown_function(function () {
-    $error = error_get_last();
-    if ($error !== null) {
-        Logger::LogError($error['message'], $error['file'] . ':' . $error['line']);
+$router = new Router();
 
-        // make sure to send a response
-        $res = new Response();
-        $res->SetError(new RequestError(500, 'server', 'Internal error'));
-        $res->Respond();
+$router->OnError(function (RouterError $error): void {
+    if ($error->GetType() != RouterError::TYPE_FATAL) {
+        return;
     }
+
+    $shutdown_error = $error->GetShutdownError();
+    Logger::LogError($shutdown_error['message'], $shutdown_error['file'] . ':' . $shutdown_error['line']);
 });
 
-// App
+// Configure routes
 
-require_once __DIR__ . '/app.php';
+require_once __DIR__ . '/routes/categoryRoutes.php';
+require_once __DIR__ . '/routes/tagRoutes.php';
+require_once __DIR__ . '/routes/assetRoutes.php';
+require_once __DIR__ . '/routes/fileRoutes.php';
+require_once __DIR__ . '/routes/userRoutes.php';
+require_once __DIR__ . '/routes/adminRoutes.php';
+
+$router->AddGET('/', function (Request $req, Response $res): void {
+    $res->SetText('Modelab API');
+});
+
+$router->AddPOST('/health', function (Request $req, Response $res): void {
+    $dbActive = SQL::MiscCheckStatus();
+    $res->SetJSON([
+        'health' => [
+            'timestamp' => time(),
+            'services' => ['database' => $dbActive],
+            'version' => '1.0'
+        ]
+    ]);
+});
+
+// Dispatch request
+
+$router->DispatchRequest();
