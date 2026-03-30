@@ -4,6 +4,8 @@
 
 ## Base
 
+The endpoints are routed using [ExRouter](https://github.com/Rodak123/ExRouter/tree/main).
+
 This API accepts `POST` as its primary method along with JSON as the primary data format.
 
 For `POST` methods the result is always:
