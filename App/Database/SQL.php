@@ -110,7 +110,7 @@ class SQL
      * @param string $table
      * @return int
      */
-    public static function SelectTableCount(string $countColumn = "*", string $table): int
+    public static function SelectTableCount(string $countColumn = "*", string $table= ""): int
     {
         self::InitPDO();
 
@@ -390,7 +390,7 @@ class SQL
      * @throws SQLExecutionException
      * @return int Affected rows
      */
-    public static function UpdateDataWithCondition(string $table, array $data = [], array $params, string $condition): int
+    public static function UpdateDataWithCondition(string $table = "", array $data = [], array $params = [], string $condition = ""): int
     {
         self::InitPDO();
 
