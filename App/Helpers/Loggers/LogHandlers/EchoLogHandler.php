@@ -9,6 +9,7 @@ class EchoLogHandler implements ILogHandler
 {
     public function HandleLog(Log $log)
     {
-        echo($log->ToText());
+        $log_text = $log->ToText();
+        echo "$log_text\n";
     }
 }

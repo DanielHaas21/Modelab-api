@@ -23,8 +23,6 @@ class FILESvalidator extends BaseValidator implements ValidatorStructure
     public function Validate(): bool
     {
         self::$isValid = $this->ValidateStructure([
-            'dataPath' => '',
-            'maxSizeBytes' => '',
             'supportedTypes' => [
                 'model' => [
 
@@ -40,14 +38,6 @@ class FILESvalidator extends BaseValidator implements ValidatorStructure
                 ],
             ],
         ]) && self::$isValid;
-
-        self::$isValid = $this->CheckProperty('dataPath', function ($val) {
-            return !empty($val) ?: (!print "dataPath shouldn't be empty \n");
-        }) && self::$isValid;
-
-        self::$isValid = $this->CheckProperty('maxSizeBytes', function ($val) {
-            return !empty($val) ?: (!print "dataPath shouldn't be empty \n");
-        }) && self::$isValid;
 
         self::$isValid = $this->CheckProperty('supportedTypes.model', function ($val) {
             $expected_vals = [ 'model/obj', 'model/mtl', 'model/gltf-binary', 'application/octet-stream', 'model/gltf+json', 'model/stl', 'application/mathematica'];

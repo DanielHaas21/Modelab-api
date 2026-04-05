@@ -1,8 +1,6 @@
 <?php
 
 const FILES_CONFIG = [
-    'dataPath' => __DIR__ . '/../data',
-    'maxSizeBytes' => 100 * 1000000, // 100 MB
     'supportedTypes' => [
         'model' => [
             'model/obj', // OBJ

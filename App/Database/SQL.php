@@ -54,7 +54,7 @@ class SQL
         $sql = "SELECT TABLE_NAME FROM information_schema.tables WHERE table_schema = :dbName AND table_name = :tableName LIMIT 1";
         try {
             $sql_com = self::$pdo->prepare($sql);
-            $sql_com->execute(['dbName' => DB_CONFIG['database'], 'tableName' => $table]);
+            $sql_com->execute(['dbName' => PDOConfig::$DATABASE, 'tableName' => $table]);
 
             if ($sql_com->rowCount() === 0) {
                 return false;
@@ -110,7 +110,7 @@ class SQL
      * @param string $table
      * @return int
      */
-    public static function SelectTableCount(string $countColumn = "*", string $table= ""): int
+    public static function SelectTableCount(string $countColumn = "*", string $table = ""): int
     {
         self::InitPDO();
 

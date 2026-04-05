@@ -3,8 +3,8 @@
 namespace App\Middleware\GoogleAuth;
 
 require_once __DIR__ . '/google-api-php-client--PHP7.0/vendor/autoload.php';
-require_once __DIR__ . '/../../../config/keys.php';
 
+use App\Helpers\AppConfig;
 use Google_Client;
 use Google_Service_Oauth2;
 
@@ -25,10 +25,8 @@ class GoogleAuth
             ];
         }
 
-        $clientId = KEYS_CONFIG['google']['clientId'];
-
         // DEVELOPMENT ENVIROMENT ONLY
-        if ($clientId == 'DEV_CLIENT') {
+        if (AppConfig::$DEV_MODE) {
             return [
                 'success' => true,
                 'user' => new GoogleUser([
@@ -44,7 +42,7 @@ class GoogleAuth
             ];
         }
 
-        $client = new Google_Client(['client_id' => $clientId]);
+        $client = new Google_Client();
         $client->setAccessToken($accessToken);
 
         $oauth2 = new Google_Service_Oauth2($client);

@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Database\SQL;
+use App\Helpers\Files\AssetFileManagerConfig;
 use App\Middleware\MiddlewareController;
 use App\Models\Asset;
 use App\Models\AssetTag;
@@ -15,8 +16,6 @@ use App\Router\Request;
 use App\Router\RequestError;
 use App\Router\Response;
 use Error;
-
-require_once __DIR__ . '/../../config/files.php';
 
 class AssetController
 {
@@ -71,12 +70,12 @@ class AssetController
                 $tmpName = $uploadedFiles['tmp_name'][$uploadIndex];
                 $size = $uploadedFiles['size'][$uploadIndex];
 
-                if ($size > FILES_CONFIG['maxSizeBytes']) {
-                    throw RequestError::CreateFieldError(400, 'files', 'File \'' . $fileName . '\' is too large. Max size: \'' . FILES_CONFIG['maxSizeBytes'] . ' B\'');
+                if ($size > AssetFileManagerConfig::$MAX_SIZE_BYTES) {
+                    throw RequestError::CreateFieldError(400, 'files', 'File \'' . $fileName . '\' is too large. Max size: \'' . AssetFileManagerConfig::$MAX_SIZE_BYTES . ' B\'');
                 }
 
                 $foundTypeGroup = null;
-                foreach (FILES_CONFIG['supportedTypes'] as $groupName => $typeGroup) {
+                foreach (AssetFileManagerConfig::$SUPPORTED_TYPES as $groupName => $typeGroup) {
                     if (in_array($type, $typeGroup)) {
                         $foundTypeGroup = $groupName;
                         break;
@@ -109,7 +108,7 @@ class AssetController
     {
         umask(0);
 
-        $dataDir = FILES_CONFIG['dataPath'];
+        $dataDir = AssetFileManagerConfig::$DATA_PATH;
         if (!is_dir($dataDir) && !mkdir($dataDir, 0777, true)) {
             throw new Error('Failed to create data directory');
         }
@@ -455,7 +454,7 @@ class AssetController
 
             $asset->Insert();
 
-            $filesDirectory = FILES_CONFIG['dataPath'] . '/' . uniqid($asset->id . '_');
+            $filesDirectory = AssetFileManagerConfig::$DATA_PATH . '/' . uniqid($asset->id . '_');
 
             $asset->filesDirectory = $filesDirectory;
             $asset->Update();

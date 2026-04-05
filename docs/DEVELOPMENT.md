@@ -49,7 +49,6 @@
 ├───config
 │   ├───someconfig.php - actual config file, can be auto generated
 │   └───someconfig.example.php - config file template
-├───auto - Scripts call only from build scripts
 ├───bin - .bat and .bash build scripts
 ├───routes - Defined routes, include only from index.php
 ├───autoload.php - Autoloader of classes

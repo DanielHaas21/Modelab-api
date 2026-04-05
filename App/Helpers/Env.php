@@ -17,6 +17,9 @@ use Exception;
  */
 final class Env
 {
+    public const ENV_PATHS_ROOT = __DIR__ . '/../..';
+    public const ENV_PATH = self::ENV_PATHS_ROOT . '/.env';
+
     /**
      * Loads an .env file
      *
@@ -24,9 +27,13 @@ final class Env
      * @throws Exception
      * @return void
      */
-    public static function Load(string $filePath = "./env"): void
+    public static function Load(string $filePath = ''): void
     {
-        if (! file_exists($filePath)) {
+        if (strlen($filePath) == 0) {
+            $filePath = self::ENV_PATH;
+        }
+
+        if (!file_exists($filePath)) {
             throw new Exception(".env file not found at: $filePath");
         }
 

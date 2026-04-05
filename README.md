@@ -9,8 +9,9 @@ This is an API and backend for [Modelab](https://github.com/DanielHaas21/Modelab
   - [Documentation](#documentation)
   - [Setup](#setup)
     - [Prerequisites](#prerequisites)
-      - [Windows](#windows)
-      - [Linux](#linux)
+    - [Setup](#setup-1)
+    - [Development](#development)
+    - [Other commands](#other-commands)
 
 ## Documentation
 
@@ -27,37 +28,56 @@ This is an API and backend for [Modelab](https://github.com/DanielHaas21/Modelab
 1. Clone the repository
 2. Make sure your MySQL DB server is on
 
-#### Windows
+There are many provided actions to help with setup and managment of this app.
 
-Make sure you are in root directory of the project
-
-Run the following commands
+On **windows** use:
 ```bash
-./modelab.cmd build
-```
-Then, assuming you have the following files configured `db.exmaple.php`, `keys.example.php`, `files.example.php`
-```bash
-./modelab.cmd config
+./modelab.cmd ACTION
 ```
 
-Or for specfic tasks
-- `create-db` for creating the database; adjusting the connection string in the PDO.php and config.php is recommended
-- `drop-db` for dropping the database
-- `migrate` for migrating tables
-
-#### Linux
-
-Make sure you are in root directory of the project and have make installed in your system
-
-Run the following commands
+On **linux** use:
 ```bash
-make build
+make ACTION
 ```
-Then, assuming you have the following files configured `db.exmaple.php`, `keys.example.php`, `files.example.php`
+
+or execute them manually from `/bin`.
+
+### Setup
+
+**Windows:**
+
 ```bash
-make config
+./modelab.cmd setup
 ```
-Or for specfic tasks
-- `create-db` for creating the database; adjusting the connection string in the PDO.php and config.php is recommended
-- `drop-db` for dropping the database
-- `migrate` for migrating tables
+
+**Linux:**
+```bash
+make setup
+```
+
+This will check your `.env` and `/config` configurations, check the DB connection, create the `data/` and `logs/` folder and populate the DB with some base data.
+
+With this, the server is ready for usage.
+
+### Development
+
+**Windows:**
+
+```bash
+./modelab.cmd setup-dev
+```
+
+**Linux:**
+```bash
+make setup-dev
+```
+
+This will do what setup does and it will load some development assets.
+
+(WIP)
+
+### Other commands
+
+- `drop-models` for dropping the database models
+- `state-export` for exporting server state (WIP)
+- `state-import` for importing server state (WIP)

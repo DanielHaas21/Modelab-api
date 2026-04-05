@@ -1,17 +1,21 @@
 SH_PATH = bin
 
-.PHONY: init-db migrate build drop-models config
+.PHONY: setup drop-models state-export state-import
 
 default:
-	@echo "No action specified"
-migrate:
-	@bash $(SH_PATH)/migrate.sh
+	@echo "No action specified. Use: setup|setup-dev|drop-models|state-export|state-import"
 
-build:
-	@bash $(SH_PATH)/build.sh
+setup:
+	@bash $(SH_PATH)/setup.sh
+
+setup-dev:
+	@bash $(SH_PATH)/setup-dev.sh
 
 drop-models:
 	@bash $(SH_PATH)/drop-models.sh
-	
-config:
-	@bash $(SH_PATH)/config.sh
+
+state-export:
+	@bash $(SH_PATH)/state-export.sh
+
+state-import:
+	@bash $(SH_PATH)/state-import.sh
