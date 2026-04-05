@@ -2,7 +2,7 @@
 
 namespace App\Services\Files;
 
-use App\Helpers\Env;
+use App\Configuration\Env;
 
 class AssetFilesConfig
 {

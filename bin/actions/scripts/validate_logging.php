@@ -1,12 +1,12 @@
 <?php
 
-use App\Database\PDOConfig;
-use App\Helpers\Env;
-use App\Helpers\Loggers\Logger;
-use App\Helpers\Loggers\LogHandlers\DBLogHandler;
-use App\Helpers\Loggers\LogHandlers\EchoLogHandler;
-use App\Helpers\Loggers\LogHandlers\FileLogHandler;
-use App\Helpers\Loggers\LogHandlers\FileLogHandlerConfig;
+use App\Services\Database\PDOConfig;
+use App\Configuration\Env;
+use App\Services\Logging\Logger;
+use App\Services\Logging\LogHandlers\DBLogHandler;
+use App\Services\Logging\LogHandlers\EchoLogHandler;
+use App\Services\Logging\LogHandlers\FileLogHandler;
+use App\Services\Logging\LogHandlers\FileLogHandlerConfig;
 
 require_once __DIR__ . '/utils.php';
 

@@ -38,14 +38,18 @@
 ├───.github - settings for Github
 │   ├───workflows
 │       └───deploy.yml - Github deploy script
-├───App - Definitions of classes
-│   ├───Database
-│   ├───Controllers
-│   ├───Helpers
-│   ├───Middleware
-│   ├───Models
-│   ├───Router
-│   └───Validators
+├───App
+│   ├───Controllers - Endpoint controllers
+│   ├───Middleware - Middleware controllers
+│   ├───Models - Database model definitions
+│   ├───Services
+│   │   ├───Database - PDO Database library
+│   │   ├───Router - ExRouter
+│   │   ├───Files - File managment service
+│   │   ├───GoogleAuth - GoogleOAuth wrapper service
+│   │   ├───Logging - Logging service
+│   │   ├───Users - User managment service
+│   ├───Configuration - App configuration
 ├───config
 │   ├───someconfig.php - actual config file, can be auto generated
 │   └───someconfig.example.php - config file template

@@ -1,10 +1,10 @@
 <?php
 
-use App\Database\Exceptions\DatabaseException;
-use App\Database\Exceptions\SQLExecutionException;
-use App\Database\PDOConfig;
-use App\Database\SQL;
-use App\Helpers\Env;
+use App\Services\Database\Exceptions\DatabaseException;
+use App\Services\Database\Exceptions\SQLExecutionException;
+use App\Services\Database\PDOConfig;
+use App\Services\Database\SQL;
+use App\Configuration\Env;
 
 require_once __DIR__ . '/utils.php';
 require_once __DIR__ . '/../../../autoload.php';

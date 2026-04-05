@@ -1,8 +1,8 @@
 <?php
 
 use App\Controllers\CategoryController;
-use App\Database\PDOConfig;
-use App\Helpers\Env;
+use App\Services\Database\PDOConfig;
+use App\Configuration\Env;
 use App\Models\Category;
 use App\Models\Tag;
 

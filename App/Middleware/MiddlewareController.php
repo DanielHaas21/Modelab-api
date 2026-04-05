@@ -4,9 +4,9 @@ namespace App\Middleware;
 
 use App\Models\Auth\LoginSession;
 use App\Models\Auth\UserMeta;
-use App\Router\Request;
-use App\Router\RequestError;
-use App\Router\Response;
+use App\Services\Router\Request;
+use App\Services\Router\RequestError;
+use App\Services\Router\Response;
 
 class MiddlewareController
 {

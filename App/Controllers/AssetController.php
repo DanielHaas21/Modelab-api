@@ -2,7 +2,7 @@
 
 namespace App\Controllers;
 
-use App\Database\SQL;
+use App\Services\Database\SQL;
 use App\Services\Files\AssetFilesConfig;
 use App\Services\Files\AssetFilesService;
 use App\Middleware\MiddlewareController;
@@ -12,10 +12,10 @@ use App\Models\Auth\User;
 use App\Models\Category;
 use App\Models\File;
 use App\Models\Tag;
-use App\Router\DataValidator;
-use App\Router\Request;
-use App\Router\RequestError;
-use App\Router\Response;
+use App\Services\Router\DataValidator;
+use App\Services\Router\Request;
+use App\Services\Router\RequestError;
+use App\Services\Router\Response;
 use Error;
 use Exception;
 

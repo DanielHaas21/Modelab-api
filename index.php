@@ -2,16 +2,16 @@
 
 require_once __DIR__ . '/autoload.php';
 
-use App\Database\PDOConfig;
-use App\AppConfig;
-use App\Helpers\Env;
+use App\Services\Database\PDOConfig;
+use App\Configuration\AppConfig;
+use App\Configuration\Env;
 use App\Services\Files\AssetFilesConfig;
-use App\Router\Router;
-use App\Helpers\Loggers\Logger;
-use App\Helpers\Loggers\LogHandlers\DBLogHandler;
-use App\Helpers\Loggers\LogHandlers\FileLogHandler;
-use App\Helpers\Loggers\LogHandlers\FileLogHandlerConfig;
-use App\Router\RouterError;
+use App\Services\Router\Router;
+use App\Services\Logging\Logger;
+use App\Services\Logging\LogHandlers\DBLogHandler;
+use App\Services\Logging\LogHandlers\FileLogHandler;
+use App\Services\Logging\LogHandlers\FileLogHandlerConfig;
+use App\Services\Router\RouterError;
 
 // Load configs
 

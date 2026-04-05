@@ -8,7 +8,7 @@ use App\Models\Auth\User;
 use App\Models\Category;
 use App\Models\File;
 use App\Models\Tag;
-use App\Router\RequestError;
+use App\Services\Router\RequestError;
 use Exception;
 
 class AssetFilesService

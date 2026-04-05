@@ -1,8 +1,8 @@
 <?php
 
-use App\Helpers\Env;
+use App\Configuration\Env;
 use App\Services\Files\AssetFilesConfig;
-use App\Validators\FILESvalidator;
+use App\Configuration\Validators\FILESvalidator;
 
 require_once __DIR__ . '/utils.php';
 

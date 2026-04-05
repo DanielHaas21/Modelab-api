@@ -2,16 +2,16 @@
 
 namespace App\Controllers;
 
-use App\AppConfig;
-use App\Middleware\GoogleAuth\GoogleAuth;
+use App\Configuration\AppConfig;
+use App\Services\GoogleAuth\GoogleAuth;
 use App\Middleware\MiddlewareController;
 use App\Models\Auth\User;
 use App\Models\Auth\UserMeta;
-use App\Router\DataValidator;
-use App\Router\Request;
-use App\Router\RequestError;
-use App\Router\Response;
-use App\Services\UserService;
+use App\Services\Router\DataValidator;
+use App\Services\Router\Request;
+use App\Services\Router\RequestError;
+use App\Services\Router\Response;
+use App\Services\Users\UserService;
 
 class UserController
 {

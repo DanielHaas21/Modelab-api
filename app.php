@@ -1,9 +1,9 @@
 <?php
 
-use App\Database\SQL;
-use App\Router\Request;
-use App\Router\Response;
-use App\Router\Router;
+use App\Services\Database\SQL;
+use App\Services\Router\Request;
+use App\Services\Router\Response;
+use App\Services\Router\Router;
 
 // things go bomboclat if this isnt here bcs preflight cors
 header("Access-Control-Allow-Origin: *", true);

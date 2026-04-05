@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Database\BaseModels\BaseModelId;
+use App\Services\Database\BaseModels\BaseModelId;
 
 class File extends BaseModelId
 {

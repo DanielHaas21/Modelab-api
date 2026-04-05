@@ -2,7 +2,7 @@
 
 namespace App\Models\Auth;
 
-use App\Database\BaseModels\BaseModelId;
+use App\Services\Database\BaseModels\BaseModelId;
 
 /**
  * Model of a User

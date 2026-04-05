@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use App\Database\BaseModels\BaseModel;
-use App\Database\SQL;
+use App\Services\Database\BaseModels\BaseModel;
+use App\Services\Database\SQL;
 
 class AssetTag extends BaseModel
 {

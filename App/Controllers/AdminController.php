@@ -2,13 +2,13 @@
 
 namespace App\Controllers;
 
-use App\Database\SQL;
-use App\Helpers\Loggers\LogStatus;
+use App\Services\Database\SQL;
+use App\Services\Logging\LogStatus;
 use App\Models\Config\Log;
-use App\Router\DataValidator;
-use App\Router\Request;
-use App\Router\RequestError;
-use App\Router\Response;
+use App\Services\Router\DataValidator;
+use App\Services\Router\Request;
+use App\Services\Router\RequestError;
+use App\Services\Router\Response;
 use DateTime;
 use Exception;
 

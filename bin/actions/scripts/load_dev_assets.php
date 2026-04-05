@@ -1,12 +1,12 @@
 <?php
 
-use App\Database\PDOConfig;
-use App\Helpers\Env;
+use App\Services\Database\PDOConfig;
+use App\Configuration\Env;
 use App\Models\Asset;
 use App\Models\Category;
 use App\Models\Tag;
 use App\Services\Files\AssetFilesService;
-use App\Services\UserService;
+use App\Services\Users\UserService;
 
 require_once __DIR__ . '/utils.php';
 require_once __DIR__ . '/dev_assets/data.php';

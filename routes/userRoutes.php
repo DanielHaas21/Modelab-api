@@ -2,7 +2,7 @@
 
 use App\Controllers\UserController;
 use App\Middleware\MiddlewareController;
-use App\Router\Routes;
+use App\Services\Router\Routes;
 
 $routes = new Routes();
 

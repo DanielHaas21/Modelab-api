@@ -1,8 +1,8 @@
 <?php
 
-use App\Database\Exceptions\SQLExecutionException;
-use App\Database\PDOConfig;
-use App\Helpers\Env;
+use App\Services\Database\Exceptions\SQLExecutionException;
+use App\Services\Database\PDOConfig;
+use App\Configuration\Env;
 use App\Models\Asset;
 use App\Services\Files\AssetFilesService;
 

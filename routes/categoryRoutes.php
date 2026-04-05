@@ -3,7 +3,7 @@
 use App\Controllers\CategoryController;
 use App\Middleware\Clearance;
 use App\Middleware\MiddlewareController;
-use App\Router\Routes;
+use App\Services\Router\Routes;
 
 $routes = new Routes();
 

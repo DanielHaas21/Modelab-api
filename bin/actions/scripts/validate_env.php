@@ -1,10 +1,10 @@
 <?php
 
-use App\Database\PDOConfig;
-use App\AppConfig;
-use App\Helpers\Env;
+use App\Services\Database\PDOConfig;
+use App\Configuration\AppConfig;
+use App\Configuration\Env;
 use App\Services\Files\AssetFilesConfig;
-use App\Helpers\Loggers\LogHandlers\FileLogHandlerConfig;
+use App\Services\Logging\LogHandlers\FileLogHandlerConfig;
 
 require_once __DIR__ . '/utils.php';
 

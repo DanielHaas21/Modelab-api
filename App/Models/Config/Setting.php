@@ -2,7 +2,7 @@
 
 namespace App\Models\Config;
 
-use App\Database\BaseModels\BaseModelId;
+use App\Services\Database\BaseModels\BaseModelId;
 
 class Setting extends BaseModelId
 {
