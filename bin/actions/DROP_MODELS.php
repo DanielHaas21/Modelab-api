@@ -11,4 +11,5 @@
 
 require_once __DIR__ . '/../../autoload.php';
 
+// Drop models
 require __DIR__ . '/scripts/drop_models.php';

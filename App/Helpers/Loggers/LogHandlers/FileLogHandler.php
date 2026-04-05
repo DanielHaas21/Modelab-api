@@ -37,6 +37,9 @@ class FileLogHandler implements ILogHandler
             throw new Exception('Failed to open log file: ' . $file_path . ', most likely because of permissions');
         }
 
+        umask(0);
+        chmod($file_path, 999);
+
         try {
             fwrite($file, trim($line) . PHP_EOL);
         } catch (Exception $e) {

@@ -22,10 +22,11 @@ $log_path = FileLogHandlerConfig::$LOG_PATH;
 if (!is_dir($log_path)) {
     echoLine('Log folder not found, attempting to create...');
 
+    umask(0);
     // Source - https://stackoverflow.com/a/37270421
     // Posted by Oldskool, modified by community. See post 'Timeline' for change history
     // Retrieved 2026-04-05, License - CC BY-SA 3.0
-    if (!mkdir($log_path, 0777, true)) {
+    if (!mkdir($log_path, 999, true)) {
         echoLine('Log folder failed to create');
         exit(1);
     }

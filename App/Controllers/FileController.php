@@ -2,14 +2,14 @@
 
 namespace App\Controllers;
 
-use App\Helpers\Files\AssetFileManagerConfig;
+use App\Services\Files\AssetFilesConfig;
 use App\Models\File;
 use App\Router\Request;
 use App\Router\RequestError;
 use App\Router\DataValidator;
 use App\Router\Response;
 
-require_once __DIR__ . '/../../preview-data/previewData.php';
+require_once __DIR__ . '/../../config/preview-data/preview_data.php';
 
 class FileController
 {
@@ -168,17 +168,17 @@ class FileController
                 throw RequestError::CreateFieldError(404, 'id', 'File with %key%: \'' . $id . '\' doesn\'t exist');
             }
 
-            if (in_array($file->type, AssetFileManagerConfig::$SUPPORTED_TYPES['model'])) {
+            if (in_array($file->type, AssetFilesConfig::$SUPPORTED_TYPES['model'])) {
                 static::HostPreview('model', $file);
             }
 
 
-            if (in_array($file->type, AssetFileManagerConfig::$SUPPORTED_TYPES['audio'])) {
+            if (in_array($file->type, AssetFilesConfig::$SUPPORTED_TYPES['audio'])) {
                 static::HostPreview('audio', $file);
             }
 
 
-            if (in_array($file->type, AssetFileManagerConfig::$SUPPORTED_TYPES['image'])) {
+            if (in_array($file->type, AssetFilesConfig::$SUPPORTED_TYPES['image'])) {
                 static::HostWatermarkedImage($file);
             }
 
@@ -245,7 +245,7 @@ class FileController
     {
         return function (Request $req, Response $res): void {
             $res->SetJSON([
-                'supportedFileTypes' => AssetFileManagerConfig::$SUPPORTED_TYPES,
+                'supportedFileTypes' => AssetFilesConfig::$SUPPORTED_TYPES,
             ]);
         };
     }

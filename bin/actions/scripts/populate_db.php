@@ -1,5 +1,6 @@
 <?php
 
+use App\Controllers\CategoryController;
 use App\Database\PDOConfig;
 use App\Helpers\Env;
 use App\Models\Category;
@@ -13,6 +14,8 @@ echoLine('Populating DB...');
 
 Env::Load();
 PDOConfig::Load();
+
+$create_category = CategoryController::Create();
 
 echoLine('Populating categories...');
 foreach (BASE_CATEGORIES as $category_name) {

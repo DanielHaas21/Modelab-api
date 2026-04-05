@@ -2,18 +2,16 @@
 
 namespace App\Controllers;
 
-use App\Helpers\AppConfig;
-use App\Middleware\Clearance;
+use App\AppConfig;
 use App\Middleware\GoogleAuth\GoogleAuth;
-use App\Middleware\GoogleAuth\GoogleUser;
 use App\Middleware\MiddlewareController;
-use App\Models\Auth\LoginSession;
 use App\Models\Auth\User;
 use App\Models\Auth\UserMeta;
 use App\Router\DataValidator;
 use App\Router\Request;
 use App\Router\RequestError;
 use App\Router\Response;
+use App\Services\UserService;
 
 class UserController
 {
@@ -45,8 +43,8 @@ class UserController
             $user = $req->GetMiddlewareData(MiddlewareController::USER_MIDDLEWARE);
 
             /**
-            * @var UserMeta
-            */
+             * @var UserMeta
+             */
             $userMeta = $req->GetMiddlewareData(MiddlewareController::USER_META_MIDDLEWARE);
 
             $res->SetJSON([
@@ -56,8 +54,8 @@ class UserController
     }
 
     /**
-    * @return (\Closure(Request $req, Response $res): void)
-    */
+     * @return (\Closure(Request $req, Response $res): void)
+     */
     public static function Login(): \Closure
     {
         return function (Request $req, Response $res): void {
@@ -67,49 +65,32 @@ class UserController
 
             $accessToken = $data['accessToken'];
 
-            $result = GoogleAuth::Login($accessToken);
+            $userService = new UserService();
 
-            if (!$result['success']) {
-                throw RequestError::CreateFieldError(401, 'accessToken', 'Failed to authenticate accessToken.');
+            if (AppConfig::$DEV_MODE) {
+                $user = $userService->GetOrCreateDevUser();
+            } else {
+                $result = GoogleAuth::Login($accessToken);
+
+                if (!$result['success']) {
+                    throw RequestError::CreateFieldError(401, 'accessToken', 'Failed to authenticate accessToken.');
+                }
+
+                $googleUser = $result['user'];
+
+                $user = $userService->GetOrCreateUser(
+                    $googleUser->email,
+                    $googleUser->givenName,
+                    $googleUser->familyName,
+                    $googleUser->picture
+                );
             }
 
-            $googleUser = $result['user'];
-
-            $user = self::GetOrCreateUser($googleUser);
-
-            $session = LoginSession::SelectOrInsertLoginSession($user);
+            $session = $userService->CreateLoginSession($user);
 
             $res->SetJSON([
-              'token' => $session->token,
+                'token' => $session->token,
             ]);
         };
-    }
-
-    private static function GetOrCreateUser(GoogleUser $googleUser): User
-    {
-        $user = User::SelectUser($googleUser->email);
-
-        if ($user != null) {
-            return $user;
-        }
-
-        $user = new User();
-        $user->email = $googleUser->email;
-        $user->givenName = $googleUser->givenName;
-        $user->familyName = $googleUser->familyName;
-        $user->picture = $googleUser->picture;
-
-        $userId = User::InsertModel($user);
-        $user->id = $userId;
-
-        $userMeta = new UserMeta();
-        $userMeta->userId = $user->id;
-        $userMeta->clearance = AppConfig::$DEV_MODE ? Clearance::OVERLORD : Clearance::USER;
-        $userMetaId = UserMeta::InsertModel($userMeta);
-
-        $user->userMetaId = $userMetaId;
-        User::UpdateModel($user);
-
-        return User::SelectModel($userId);
     }
 }

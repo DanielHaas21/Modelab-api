@@ -1,9 +1,9 @@
 <?php
 
 use App\Database\PDOConfig;
-use App\Helpers\AppConfig;
+use App\AppConfig;
 use App\Helpers\Env;
-use App\Helpers\Files\AssetFileManagerConfig;
+use App\Services\Files\AssetFilesConfig;
 use App\Helpers\Loggers\LogHandlers\FileLogHandlerConfig;
 
 require_once __DIR__ . '/utils.php';
@@ -52,8 +52,8 @@ function define_env_issue(string $key, string $reason)
 $env_fields = [
     define_env_field(AppConfig::ENV_DEV_MODE, false, '0'),
     define_env_field(FileLogHandlerConfig::ENV_LOG_PATH, true),
-    define_env_field(AssetFileManagerConfig::ENV_DATA_PATH, true),
-    define_env_field(AssetFileManagerConfig::ENV_DATA_MAX_SIZE_MB, true),
+    define_env_field(AssetFilesConfig::ENV_DATA_PATH, true),
+    define_env_field(AssetFilesConfig::ENV_DATA_MAX_SIZE_MB, true),
     define_env_field(PDOConfig::ENV_SERVERNAME, true),
     define_env_field(PDOConfig::ENV_USERNAME, true),
     define_env_field(PDOConfig::ENV_PASSWORD, true),

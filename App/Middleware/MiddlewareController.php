@@ -3,7 +3,6 @@
 namespace App\Middleware;
 
 use App\Models\Auth\LoginSession;
-use App\Models\Auth\User;
 use App\Models\Auth\UserMeta;
 use App\Router\Request;
 use App\Router\RequestError;

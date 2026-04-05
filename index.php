@@ -3,12 +3,9 @@
 require_once __DIR__ . '/autoload.php';
 
 use App\Database\PDOConfig;
-use App\Database\SQL;
-use App\Helpers\AppConfig;
+use App\AppConfig;
 use App\Helpers\Env;
-use App\Helpers\Files\AssetFileManagerConfig;
-use App\Router\Request;
-use App\Router\Response;
+use App\Services\Files\AssetFilesConfig;
 use App\Router\Router;
 use App\Helpers\Loggers\Logger;
 use App\Helpers\Loggers\LogHandlers\DBLogHandler;
@@ -21,7 +18,7 @@ use App\Router\RouterError;
 Env::Load();
 
 AppConfig::Load();
-AssetFileManagerConfig::Load();
+AssetFilesConfig::Load();
 PDOConfig::Load();
 FileLogHandlerConfig::Load();
 

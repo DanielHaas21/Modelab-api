@@ -1,7 +1,7 @@
 <?php
 
 use App\Helpers\Env;
-use App\Helpers\Files\AssetFileManagerConfig;
+use App\Services\Files\AssetFilesConfig;
 use App\Validators\FILESvalidator;
 
 require_once __DIR__ . '/utils.php';
@@ -15,13 +15,13 @@ Env::Load();
 $FILESvalidator = new FILESvalidator(FILES_CONFIG);
 $FILESvalidator->Run();
 
-AssetFileManagerConfig::Load();
+AssetFilesConfig::Load();
 
 echoLine('Files config OK');
 
 echoLine('Validating Asset files...');
 
-$data_path = AssetFileManagerConfig::$DATA_PATH;
+$data_path = AssetFilesConfig::$DATA_PATH;
 
 if (!is_dir($data_path)) {
     echoLine('Data folder not found, attempting to create...');

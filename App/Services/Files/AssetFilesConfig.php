@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Helpers\Files;
+namespace App\Services\Files;
 
 use App\Helpers\Env;
 
-class AssetFileManagerConfig
+class AssetFilesConfig
 {
     public const ENV_DATA_PATH = 'DATA_PATH';
     public const ENV_DATA_MAX_SIZE_MB = 'DATA_MAX_SIZE_MB';

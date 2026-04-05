@@ -3,7 +3,8 @@
 namespace App\Controllers;
 
 use App\Database\SQL;
-use App\Helpers\Files\AssetFileManagerConfig;
+use App\Services\Files\AssetFilesConfig;
+use App\Services\Files\AssetFilesService;
 use App\Middleware\MiddlewareController;
 use App\Models\Asset;
 use App\Models\AssetTag;
@@ -16,103 +17,11 @@ use App\Router\Request;
 use App\Router\RequestError;
 use App\Router\Response;
 use Error;
+use Exception;
 
 class AssetController
 {
     public const MAX_COUNT_PER_PAGE = 50;
-
-    /**
-     * @param array $filesMeta
-     * @return array{isHidden: bool, isMain: bool, isRemoved: bool, isPreview: bool, name: string|null, tmpName: string|null, type: string|null, file: File|null}
-     */
-    private static function ExtractFilesData(array $filesMeta): array
-    {
-        $filesData = [];
-        $uploadedFiles = $_FILES['files'] ?? null;
-        $uploadIndex = 0;
-
-        foreach ($filesMeta as $meta) {
-            $id = $meta['id'] ?? null;
-            $isHidden = ($meta['isHidden'] ?? false) == true;
-            $isMain = ($meta['isMain'] ?? false) == true;
-            $isRemoved = ($meta['isRemoved'] ?? false) == true;
-            $isPreview = ($meta['isPreview'] ?? false) == true;
-
-            if ($id != null) {
-                $id = intval($id);
-                $file = File::SelectModel($id);
-
-                if ($file == null) {
-                    throw RequestError::CreateFieldError(404, 'filesMeta', 'File with id: \'' . $id . '\' doesn\'t exist');
-                }
-
-                $filesData[] = [
-                    'name' => null,
-                    'type' => null,
-                    'tmpName' => null,
-                    'isHidden' => $isHidden,
-                    'isMain' => $isMain,
-                    'isRemoved' => $isRemoved,
-                    'isPreview' => $isPreview,
-                    'file' => $file
-                ];
-            } else {
-                if ($isRemoved) {
-                    continue;
-                }
-
-                if ($uploadedFiles === null || !isset($uploadedFiles['name'][$uploadIndex])) {
-                    throw RequestError::CreateFieldError(400, 'files', 'Missing file upload for metadata');
-                }
-
-                $type = $uploadedFiles['type'][$uploadIndex];
-                $fileName = $uploadedFiles['name'][$uploadIndex];
-                $tmpName = $uploadedFiles['tmp_name'][$uploadIndex];
-                $size = $uploadedFiles['size'][$uploadIndex];
-
-                if ($size > AssetFileManagerConfig::$MAX_SIZE_BYTES) {
-                    throw RequestError::CreateFieldError(400, 'files', 'File \'' . $fileName . '\' is too large. Max size: \'' . AssetFileManagerConfig::$MAX_SIZE_BYTES . ' B\'');
-                }
-
-                $foundTypeGroup = null;
-                foreach (AssetFileManagerConfig::$SUPPORTED_TYPES as $groupName => $typeGroup) {
-                    if (in_array($type, $typeGroup)) {
-                        $foundTypeGroup = $groupName;
-                        break;
-                    }
-                }
-
-                if ($foundTypeGroup == null) {
-                    throw RequestError::CreateFieldError(400, 'files', 'File \'' . $fileName . '\' has unsupported file type: \'' . $type . '\'');
-                }
-
-                $filesData[] = [
-                    'name' => $fileName,
-                    'type' => $type,
-                    'tmpName' => $tmpName,
-                    'isHidden' => $isHidden,
-                    'isMain' => $isMain,
-                    'isRemoved' => false,
-                    'isPreview' => $isPreview,
-                    'file' => null
-                ];
-
-                $uploadIndex++;
-            }
-        }
-
-        return $filesData;
-    }
-
-    private static function SetupDataDirectory(): void
-    {
-        umask(0);
-
-        $dataDir = AssetFileManagerConfig::$DATA_PATH;
-        if (!is_dir($dataDir) && !mkdir($dataDir, 0777, true)) {
-            throw new Error('Failed to create data directory');
-        }
-    }
 
     /**
      * @param Asset $asset
@@ -129,7 +38,11 @@ class AssetController
             'author' => $asset->author,
             'category' => $category->GetData(),
             'tags' => array_map(function ($assetTag) {
-                return Tag::SelectModel($assetTag->tagId)->GetData();
+                $tag = Tag::SelectModel($assetTag->tagId);
+                if ($tag == null) {
+                    throw new Exception('Tag with id:\'' . $assetTag->tagId . '\' not found');
+                }
+                return $tag->GetData();
             }, $tags),
             'created' => $asset->created,
             'updated' => $asset->updated,
@@ -316,6 +229,7 @@ class AssetController
 
             DataValidator::ValidateFieldsAre([DataValidator::REQUIRED, DataValidator::NUMERIC], $variables, ['id']);
             $id = intval($variables['id']);
+
             /**
              * @var ?Asset
              */
@@ -348,6 +262,7 @@ class AssetController
 
             DataValidator::ValidateFieldsAre([DataValidator::REQUIRED, DataValidator::NUMERIC], $variables, ['id']);
             $id = intval($variables['id']);
+
             /**
              * @var ?Asset
              */
@@ -415,6 +330,9 @@ class AssetController
                 throw RequestError::CreateFieldError(400, 'tagIds', '%key% must be an array');
             }
 
+            /**
+             * @var Tag[]
+             */
             $tags = [];
             foreach ($tagIds as $tagId) {
                 if (!is_numeric($tagId)) {
@@ -435,67 +353,10 @@ class AssetController
                 throw RequestError::CreateFieldError(400, 'filesMeta', '%key% must be an array');
             }
 
-            $filesData = self::ExtractFilesData($filesMeta);
+            $service = new AssetFilesService();
+            $filesData = $service->ExtractFilesData($filesMeta, $_FILES['files'] ?? null);
 
-            self::SetupDataDirectory();
-
-            $asset = new Asset();
-            $asset->name = trim($name);
-            $asset->description = trim($description);
-            $description = str_replace("\r\n", "\n", $description);
-            $asset->author = ($author === null || trim($author) === '') ? null : trim($author);
-
-            $asset->categoryId = $categoryId;
-            $asset->uploaderId = $user->id;
-
-            $currentTime = new \DateTime();
-            $asset->created = $currentTime->format('Y-m-d H:i:s');
-            $asset->updated = $currentTime->format('Y-m-d H:i:s');
-
-            $asset->Insert();
-
-            $filesDirectory = AssetFileManagerConfig::$DATA_PATH . '/' . uniqid($asset->id . '_');
-
-            $asset->filesDirectory = $filesDirectory;
-            $asset->Update();
-
-            if (!mkdir($asset->filesDirectory, 0777, true)) {
-                $asset->Delete();
-                throw new Error('Failed to create asset directory');
-            }
-
-            foreach ($filesData as $fileData) {
-                $tmpName = $fileData['tmpName'];
-                $fileName = $fileData['name'];
-                $path = $asset->filesDirectory . '/' . uniqid() . '_' . $fileName;
-
-                if (!move_uploaded_file($tmpName, $path)) {
-                    throw new Error('Failed to move uploaded file: \'' . $fileName . '\'');
-                }
-
-                $file = new File();
-                $file->path = $path;
-                $file->name = $fileData['name'];
-                $file->type = $fileData['type'];
-                $file->isMain = $fileData['isMain'] ? 1 : 0;
-                $file->isHidden = $fileData['isHidden'] ? 1 : 0;
-                $file->assetId = $asset->id;
-
-                $fileId = $file->Insert();
-
-                if ($fileData['isPreview']) {
-                    $asset->previewFileId = $fileId;
-                    $asset->Update();
-                }
-            }
-
-            foreach ($tags as $tag) {
-                $assetTag = new AssetTag();
-                $assetTag->assetId = $asset->id;
-                $assetTag->tagId = $tag->id;
-
-                $assetTag->Insert();
-            }
+            $asset = $service->CreateAsset($user, $name, $description, $category, $tags, $filesData, $author);
 
             $res->SetJSON([
                 'message' => 'Asset created',
@@ -544,6 +405,9 @@ class AssetController
                 throw RequestError::CreateFieldError(400, 'tagIds', '%key% must be an array');
             }
 
+            /**
+             * @var Tag[]
+             */
             $tags = [];
             foreach ($tagIds as $tagId) {
                 if (!is_numeric($tagId)) {
@@ -566,113 +430,10 @@ class AssetController
                 throw RequestError::CreateFieldError(404, 'id', 'Asset with %key%: \'' . $id . '\' doesn\'t exist');
             }
 
-            $asset->name = $name;
-            $asset->description = $description;
-            $asset->author = ($author === null || trim($author) === '') ? null : trim($author);
-            $asset->categoryId = $categoryId;
+            $service = new AssetFilesService();
+            $filesData = $service->ExtractFilesData($filesMeta, $_FILES['files'] ?? null);
 
-            $currentTime = new \DateTime();
-            $asset->updated = $currentTime->format('Y-m-d H:i:s');
-
-            $asset->Update();
-
-            $filesData = self::ExtractFilesData($filesMeta);
-
-            foreach ($filesData as $fileData) {
-                /**
-                 * @var File|null
-                 */
-                $file = $fileData['file'];
-                $isRemoved = $fileData['isRemoved'];
-                $isHidden = $fileData['isHidden'];
-                $isMain = $fileData['isMain'];
-                $isPreview = $fileData['isPreview'];
-
-                if ($file != null) {
-                    if ($file->assetId != $asset->id) {
-                        throw RequestError::CreateFieldError(
-                            404,
-                            'filesMeta',
-                            'File with id: \'' . $file->id . '\' doesn\'t belong to asset with id: \'' . $asset->id . '\''
-                        );
-                    }
-                    if ($isRemoved) {
-                        if (file_exists($file->path) && !unlink($file->path)) {
-                            throw new Error('Failed to delete asset file with id: \'' . $file->id . '\'');
-                        }
-                        $file->Delete();
-
-                        if ($asset->previewFileId == $file->id) {
-                            $asset->previewFileId = null;
-                            $asset->Update();
-                        }
-                        continue;
-                    }
-
-                    $file->isHidden = $isHidden ? 1 : 0;
-                    $file->isMain = $isMain ? 1 : 0;
-                    $file->Update();
-
-                    if ($isPreview) {
-                        $asset->previewFileId = $file->id;
-                        $asset->Update();
-                    }
-                } else {
-                    $tmpName = $fileData['tmpName'];
-                    $fileName = $fileData['name'];
-                    $path = $asset->filesDirectory . '/' . uniqid() . '_' . $fileName;
-
-                    if (!move_uploaded_file($tmpName, $path)) {
-                        throw new Error('Failed to move uploaded file: \'' . $fileName . '\'');
-                    }
-
-                    $file = new File();
-                    $file->path = $path;
-                    $file->name = $fileData['name'];
-                    $file->type = $fileData['type'];
-                    $file->isMain = $fileData['isMain'] ? 1 : 0;
-                    $file->isHidden = $fileData['isHidden'] ? 1 : 0;
-                    $file->assetId = $asset->id;
-
-                    $fileId = $file->Insert();
-
-                    if ($isPreview) {
-                        $asset->previewFileId = $fileId;
-                        $asset->Update();
-                    }
-                }
-            }
-
-            /**
-             * @var AssetTag[]
-             */
-            $assetTags = AssetTag::SelectWhereModels('assetId = :assetId', [':assetId' => $asset->id]);
-
-            foreach ($assetTags as $curentTag) {
-                $wasDeleted = true;
-                foreach ($tags as $tag) {
-                    if ($tag->id == $curentTag->tagId) {
-                        $wasDeleted = false;
-                        break;
-                    }
-                }
-
-                if ($wasDeleted) {
-                    $curentTag->Delete();
-                }
-            }
-
-            foreach ($tags as $tag) {
-                $assetTags = AssetTag::SelectWhereModels('assetId = :assetId AND tagId = :tagId', [':assetId' => $asset->id, ':tagId' => $tag->id]);
-                if (count($assetTags) > 0) {
-                    continue;
-                }
-                $assetTag = new AssetTag();
-                $assetTag->assetId = $asset->id;
-                $assetTag->tagId = $tag->id;
-
-                $assetTag->Insert();
-            }
+            $service->UpdateAsset($asset, $name, $description, $category, $tags, $filesData, $author);
 
             $res->SetJSON([
                 'message' => 'Asset updated',
@@ -701,25 +462,8 @@ class AssetController
                 throw RequestError::CreateFieldError(404, 'id', 'Asset with %key%: \'' . $id . '\' doesn\'t exist');
             }
 
-            /**
-             * @var File[]
-             */
-            $files = File::SelectWhereModels('assetId = :assetId', [
-                ':assetId' => $asset->id
-            ]);
-            foreach ($files as $file) {
-                if (file_exists($file->path) && !unlink($file->path)) {
-                    throw new Error('Failed to delete asset file with id: \'' . $file->id . '\'');
-                }
-
-                $file->Delete();
-            }
-
-            if (is_dir($asset->filesDirectory) && !rmdir($asset->filesDirectory)) {
-                throw new Error('Failed to delete asset directory');
-            }
-
-            $asset->Delete();
+            $service = new AssetFilesService();
+            $service->DeleteAsset($asset);
 
             $res->SetJSON([
                 'message' => 'Asset deleted',

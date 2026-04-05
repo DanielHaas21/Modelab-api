@@ -4,7 +4,6 @@ namespace App\Middleware\GoogleAuth;
 
 require_once __DIR__ . '/google-api-php-client--PHP7.0/vendor/autoload.php';
 
-use App\Helpers\AppConfig;
 use Google_Client;
 use Google_Service_Oauth2;
 
@@ -22,23 +21,6 @@ class GoogleAuth
                 'success' => false,
                 'error' => 'No Access token',
                 'user' => null
-            ];
-        }
-
-        // DEVELOPMENT ENVIROMENT ONLY
-        if (AppConfig::$DEV_MODE) {
-            return [
-                'success' => true,
-                'user' => new GoogleUser([
-                    'sub' => 'dev-id',
-                    'email' => 'john.doe@test.com',
-                    'name' => 'John Doe',
-                    'given_name' => 'John',
-                    'family_name' => 'Doe',
-                    'picture' => 'https://picsum.photos/128/128',
-                    'email_verified' => true,
-                ]),
-                'error' => ''
             ];
         }
 
