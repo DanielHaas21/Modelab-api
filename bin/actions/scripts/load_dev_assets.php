@@ -86,8 +86,6 @@ foreach (DEV_ASSETS as $dev_asset) {
             exit(1);
         }
 
-        echoLine($sourcePath . ' has type ' . mime_content_type($sourcePath));
-
         $files_data[] = [
             'name' => basename($sourcePath),
             'type' => mime_content_type($sourcePath) ?: 'application/octet-stream',
