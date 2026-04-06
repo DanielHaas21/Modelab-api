@@ -87,7 +87,11 @@ Returns files metadata.
     "meta": {
         "id": 3,
         "name": "house.fbx",
-        "fileType": "application/octet-stream"
+        "group": "model",
+        "fileType": "application/octet-stream",
+        "isHidden": false,
+        "order": 1,
+        "isPreview": false
     }
 }
 ```

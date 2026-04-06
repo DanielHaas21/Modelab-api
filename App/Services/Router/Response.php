@@ -102,7 +102,7 @@ class Response
      */
     public function Respond(): void
     {
-        if (! $this->HasResponse()) {
+        if (!$this->HasResponse()) {
             return;
         }
 

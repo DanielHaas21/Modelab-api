@@ -22,7 +22,7 @@ class File extends BaseModelId
      * @sql VARCHAR(128) NOT NULL
      * @var string
      */
-    public $type;
+    public $group;
 
     /**
      * @sql BOOLEAN NOT NULL
@@ -31,10 +31,10 @@ class File extends BaseModelId
     public $isHidden;
 
     /**
-     * @sql BOOLEAN NOT NULL
-     * @var bool
+     * @sql INTEGER NOT NULL
+     * @var int
      */
-    public $isMain;
+    public $order;
 
     /**
      * @sql INTEGER NOT NULL

@@ -26,6 +26,8 @@ trait PDOTrait
             return;
         }
 
+        PDOConfig::Load();
+
         $DBservername = PDOConfig::$SERVERNAME;
         $DBusername   = PDOConfig::$USERNAME;
         $DBpassword   = PDOConfig::$PASSWORD;

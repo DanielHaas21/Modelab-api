@@ -1,6 +1,5 @@
 <?php
 
-use App\Services\Database\PDOConfig;
 use App\Configuration\Env;
 use App\Services\Logging\Logger;
 use App\Services\Logging\LogHandlers\DBLogHandler;
@@ -15,7 +14,6 @@ echoLine('Validating Logging...');
 
 Env::Load();
 FileLogHandlerConfig::Load();
-PDOConfig::Load();
 
 $log_path = FileLogHandlerConfig::$LOG_PATH;
 
@@ -26,12 +24,12 @@ if (!is_dir($log_path)) {
     // Source - https://stackoverflow.com/a/37270421
     // Posted by Oldskool, modified by community. See post 'Timeline' for change history
     // Retrieved 2026-04-05, License - CC BY-SA 3.0
-    if (!mkdir($log_path, 999, true)) {
+    if (!mkdir($log_path, 0777, true)) {
         echoLine('Log folder failed to create');
         exit(1);
     }
 
-    if (!chmod($log_path, 999)) {
+    if (!chmod($log_path, 0777)) {
         echoLine('Log folder failed to set permissions');
         rmdir($log_path);
         exit(1);

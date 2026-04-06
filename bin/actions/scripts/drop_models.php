@@ -1,9 +1,7 @@
 <?php
 
 use App\Services\Database\Exceptions\SQLExecutionException;
-use App\Services\Database\PDOConfig;
 use App\Configuration\Env;
-use App\Models\Asset;
 use App\Services\Files\AssetFilesService;
 
 require_once __DIR__ . '/utils.php';
@@ -12,19 +10,6 @@ echoLine();
 echoLine('Droping Models...');
 
 Env::Load();
-PDOConfig::Load();
-
-echoLine('Clearing data...');
-
-$asset_file_service = new AssetFilesService();
-
-/**
- * @var Asset[]
- */
-$assets = Asset::SelectAllModels();
-foreach ($assets as $asset) {
-    $asset_file_service->DeleteAsset($asset);
-}
 
 foreach (DB_ALL_MODELS as $modelClass) {
     echoLine('Dropping Model ' . $modelClass . '...');
@@ -37,5 +22,10 @@ foreach (DB_ALL_MODELS as $modelClass) {
         exit(1);
     }
 }
+
+echoLine('Clearing files...');
+
+$asset_file_service = new AssetFilesService();
+$asset_file_service->RemoveStrayAssetFiles();
 
 echoLine('Dropping Models OK');

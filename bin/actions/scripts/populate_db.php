@@ -1,7 +1,6 @@
 <?php
 
 use App\Controllers\CategoryController;
-use App\Services\Database\PDOConfig;
 use App\Configuration\Env;
 use App\Models\Category;
 use App\Models\Tag;
@@ -13,7 +12,6 @@ echoLine();
 echoLine('Populating DB...');
 
 Env::Load();
-PDOConfig::Load();
 
 $create_category = CategoryController::Create();
 

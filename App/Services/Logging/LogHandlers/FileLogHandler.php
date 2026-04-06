@@ -11,15 +11,11 @@ class FileLogHandler implements ILogHandler
 {
     private $logs_folder;
 
-    /**
-     * @param string $logs_folder Leave empty string to load from config
-     */
-    public function __construct(string $logs_folder = '')
+    public function __construct()
     {
-        if (strlen($logs_folder) == 0) {
-            $logs_folder = FileLogHandlerConfig::$LOG_PATH;
-        }
-        $this->logs_folder = $logs_folder;
+        FileLogHandlerConfig::Load();
+
+        $this->logs_folder = FileLogHandlerConfig::$LOG_PATH;
     }
 
     private function GetLogFilePath()

@@ -1,7 +1,6 @@
 <?php
 
 const PREVIEW_IMAGES = [
-    'preview_image_type' => 'image/png',
     'watermark' => __DIR__ . '/watermark.png',
     'placeholders' => [
         'model' => __DIR__ . '/3d-placeholder.png',

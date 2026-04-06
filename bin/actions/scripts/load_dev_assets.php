@@ -1,6 +1,5 @@
 <?php
 
-use App\Services\Database\PDOConfig;
 use App\Configuration\Env;
 use App\Models\Asset;
 use App\Models\Category;
@@ -15,7 +14,6 @@ echoLine();
 echoLine('Loading DEV assets...');
 
 Env::Load();
-PDOConfig::Load();
 
 echoLine('Loading category IDs...');
 /**
@@ -89,9 +87,9 @@ foreach (DEV_ASSETS as $dev_asset) {
         $files_data[] = [
             'name' => basename($sourcePath),
             'type' => mime_content_type($sourcePath) ?: 'application/octet-stream',
-            'tmpName' => $sourcePath,
+            'tmp_name' => $sourcePath,
             'isHidden' => $file_info['isHidden'],
-            'isMain' => $file_info['isMain'],
+            'order' => $file_info['order'],
             'isRemoved' => false,
             'isPreview' => $file_info['isPreview'],
             'file' => null

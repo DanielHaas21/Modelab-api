@@ -255,45 +255,6 @@ class AssetController
     /**
      * @return (\Closure(Request $req, Response $res): void)
      */
-    public static function SelectFiles(): \Closure
-    {
-        return function (Request $req, Response $res): void {
-            $variables = $req->GetVariables();
-
-            DataValidator::ValidateFieldsAre([DataValidator::REQUIRED, DataValidator::NUMERIC], $variables, ['id']);
-            $id = intval($variables['id']);
-
-            /**
-             * @var ?Asset
-             */
-            $asset = Asset::SelectModel($id);
-
-            if ($asset == null) {
-                throw RequestError::CreateFieldError(404, 'id', 'Asset with %key%: \'' . $id . '\' doesn\'t exist');
-            }
-
-            $files = array_map(function ($file) use ($asset) {
-                return [
-                    'id' => $file->id,
-                    'name' => $file->name,
-                    'fileType' => $file->type,
-                    'isHidden' => $file->isHidden,
-                    'isMain' => $file->isMain,
-                    'isPreview' => $file->id == $asset->previewFileId
-                ];
-            }, File::SelectWhereModels('assetId = :assetId', [
-                ':assetId' => $asset->id
-            ]));
-
-            $res->SetJSON([
-                'files' => $files
-            ]);
-        };
-    }
-
-    /**
-     * @return (\Closure(Request $req, Response $res): void)
-     */
     public static function Create(): \Closure
     {
         return function (Request $req, Response $res): void {

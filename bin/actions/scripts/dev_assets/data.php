@@ -31,11 +31,11 @@ const DEV_ASSETS = [
         'category' => CAT_3D_MODELS,
         'tags' => [TAG_MAYA, TAG_FBX, TAG_SHRINE],
         'files' => [
-            ['path' => './Chram/Chram.mb', 'isHidden' => false, 'isMain' => false, 'isPreview' => false],
-            ['path' => './Chram/Chram_export.mb', 'isHidden' => false, 'isMain' => false, 'isPreview' => false],
-            ['path' => './Chram/chram.fbx', 'isHidden' => false, 'isMain' => true, 'isPreview' => false],
-            ['path' => './Chram/Chram_All.png', 'isHidden' => false, 'isMain' => true, 'isPreview' => false],
-            ['path' => './Chram/Chram_Persp.png', 'isHidden' => false, 'isMain' => true, 'isPreview' => true],
+            ['path' => './Chram/Chram.mb', 'isHidden' => true, 'order' => 0, 'isPreview' => false],
+            ['path' => './Chram/Chram_export.mb', 'isHidden' => true, 'order' => 0, 'isPreview' => false],
+            ['path' => './Chram/chram.fbx', 'isHidden' => false, 'order' => 1, 'isPreview' => false],
+            ['path' => './Chram/Chram_All.png', 'isHidden' => false, 'order' => 2, 'isPreview' => false],
+            ['path' => './Chram/Chram_Persp.png', 'isHidden' => false, 'order' => 3, 'isPreview' => true],
         ]
     ],
     [
@@ -44,9 +44,9 @@ const DEV_ASSETS = [
         'category' => CAT_3D_MODELS,
         'tags' => [TAG_MAYA, TAG_SHRINE],
         'files' => [
-            ['path' => './Baudys/Baudys.mb', 'isHidden' => false, 'isMain' => false, 'isPreview' => false],
-            ['path' => './Baudys/all.png', 'isHidden' => false, 'isMain' => true, 'isPreview' => false],
-            ['path' => './Baudys/persp.png', 'isHidden' => false, 'isMain' => true, 'isPreview' => true],
+            ['path' => './Baudys/Baudys.mb', 'isHidden' => true, 'order' => 0, 'isPreview' => false],
+            ['path' => './Baudys/all.png', 'isHidden' => false, 'order' => 1, 'isPreview' => false],
+            ['path' => './Baudys/persp.png', 'isHidden' => false, 'order' => 2, 'isPreview' => true],
         ]
     ],
     [
@@ -55,10 +55,10 @@ const DEV_ASSETS = [
         'category' => CAT_3D_MODELS,
         'tags' => [TAG_MAYA, TAG_FBX, TAG_SHRINE, TAG_TEXTURED],
         'files' => [
-            ['path' => './Bugaj/Bugaj.mb', 'isHidden' => false, 'isMain' => false, 'isPreview' => false],
-            ['path' => './Bugaj/Bugaj.fbx', 'isHidden' => false, 'isMain' => true, 'isPreview' => false],
-            ['path' => './Bugaj/all.png', 'isHidden' => false, 'isMain' => false, 'isPreview' => false],
-            ['path' => './Bugaj/persp.png', 'isHidden' => false, 'isMain' => false, 'isPreview' => true],
+            ['path' => './Bugaj/Bugaj.mb', 'isHidden' => true, 'order' => 0, 'isPreview' => false],
+            ['path' => './Bugaj/Bugaj.fbx', 'isHidden' => false, 'order' => 1, 'isPreview' => false],
+            ['path' => './Bugaj/all.png', 'isHidden' => false, 'order' => 2, 'isPreview' => false],
+            ['path' => './Bugaj/persp.png', 'isHidden' => false, 'order' => 3, 'isPreview' => true],
         ]
     ],
     [
@@ -67,9 +67,9 @@ const DEV_ASSETS = [
         'category' => CAT_3D_MODELS,
         'tags' => [TAG_MAYA, TAG_OBJ, TAG_PROP],
         'files' => [
-            ['path' => './CP_NabytekHraoTruny/CP_NabytekHraoTruny.mb', 'isHidden' => false, 'isMain' => false, 'isPreview' => false],
-            ['path' => './CP_NabytekHraoTruny/CP_NabytekHraoTruny.mtl', 'isHidden' => false, 'isMain' => true, 'isPreview' => false],
-            ['path' => './CP_NabytekHraoTruny/CP_NabytekHraoTruny.obj', 'isHidden' => false, 'isMain' => true, 'isPreview' => false],
+            ['path' => './CP_NabytekHraoTruny/CP_NabytekHraoTruny.mb', 'isHidden' => true, 'order' => 0, 'isPreview' => false],
+            ['path' => './CP_NabytekHraoTruny/CP_NabytekHraoTruny.mtl', 'isHidden' => false, 'order' => 0, 'isPreview' => false],
+            ['path' => './CP_NabytekHraoTruny/CP_NabytekHraoTruny.obj', 'isHidden' => false, 'order' => 1, 'isPreview' => false],
         ]
     ],
     [
@@ -78,11 +78,11 @@ const DEV_ASSETS = [
         'category' => CAT_3D_MODELS,
         'tags' => [TAG_MAYA, TAG_OBJ, TAG_SHRINE],
         'files' => [
-            ['path' => './Sedmihradsky/Sedmihradsky.mb', 'isHidden' => false, 'isMain' => false, 'isPreview' => false],
-            ['path' => './Sedmihradsky/Sedmihradsky.obj', 'isHidden' => false, 'isMain' => true, 'isPreview' => false],
-            ['path' => './Sedmihradsky/Sedmihradsky.mtl', 'isHidden' => false, 'isMain' => true, 'isPreview' => false],
-            ['path' => './Sedmihradsky/all.png', 'isHidden' => false, 'isMain' => false, 'isPreview' => false],
-            ['path' => './Sedmihradsky/persp.png', 'isHidden' => false, 'isMain' => false, 'isPreview' => true],
+            ['path' => './Sedmihradsky/Sedmihradsky.mb', 'isHidden' => true, 'order' => 0, 'isPreview' => false],
+            ['path' => './Sedmihradsky/Sedmihradsky.obj', 'isHidden' => false, 'order' => 1, 'isPreview' => false],
+            ['path' => './Sedmihradsky/Sedmihradsky.mtl', 'isHidden' => false, 'order' => 0, 'isPreview' => false],
+            ['path' => './Sedmihradsky/all.png', 'isHidden' => false, 'order' => 2, 'isPreview' => false],
+            ['path' => './Sedmihradsky/persp.png', 'isHidden' => false, 'order' => 3, 'isPreview' => true],
         ]
     ],
     [
@@ -91,10 +91,10 @@ const DEV_ASSETS = [
         'category' => CAT_3D_MODELS,
         'tags' => [TAG_MAYA, TAG_FBX, TAG_SHRINE],
         'files' => [
-            ['path' => './Stastka/Stastka.mb', 'isHidden' => false, 'isMain' => false, 'isPreview' => false],
-            ['path' => './Stastka/Stastka.fbx', 'isHidden' => false, 'isMain' => true, 'isPreview' => false],
-            ['path' => './Stastka/all.png', 'isHidden' => false, 'isMain' => false, 'isPreview' => false],
-            ['path' => './Stastka/persp.png', 'isHidden' => false, 'isMain' => false, 'isPreview' => true],
+            ['path' => './Stastka/Stastka.mb', 'isHidden' => true, 'order' => 0, 'isPreview' => false],
+            ['path' => './Stastka/Stastka.fbx', 'isHidden' => false, 'order' => 1, 'isPreview' => false],
+            ['path' => './Stastka/all.png', 'isHidden' => false, 'order' => 2, 'isPreview' => false],
+            ['path' => './Stastka/persp.png', 'isHidden' => false, 'order' => 3, 'isPreview' => true],
         ]
     ],
     [
@@ -103,10 +103,10 @@ const DEV_ASSETS = [
         'category' => CAT_3D_MODELS,
         'tags' => [TAG_MAYA, TAG_FBX, TAG_SHRINE],
         'files' => [
-            ['path' => './Tumova_TajMahal/Tumova_TajMahal.mb', 'isHidden' => false, 'isMain' => false, 'isPreview' => false],
-            ['path' => './Tumova_TajMahal/Tumova_TajMahal.fbx', 'isHidden' => false, 'isMain' => true, 'isPreview' => false],
-            ['path' => './Tumova_TajMahal/all.png', 'isHidden' => false, 'isMain' => false, 'isPreview' => false],
-            ['path' => './Tumova_TajMahal/persp.png', 'isHidden' => false, 'isMain' => false, 'isPreview' => true],
+            ['path' => './Tumova_TajMahal/Tumova_TajMahal.mb', 'isHidden' => true, 'order' => 0, 'isPreview' => false],
+            ['path' => './Tumova_TajMahal/Tumova_TajMahal.fbx', 'isHidden' => false, 'order' => 1, 'isPreview' => false],
+            ['path' => './Tumova_TajMahal/all.png', 'isHidden' => false, 'order' => 2, 'isPreview' => false],
+            ['path' => './Tumova_TajMahal/persp.png', 'isHidden' => false, 'order' => 3, 'isPreview' => true],
         ]
     ],
     [
@@ -115,8 +115,8 @@ const DEV_ASSETS = [
         'category' => CAT_AUDIO,
         'tags' => [TAG_MUSIC],
         'files' => [
-            ['path' => './Audio/juhani-junkala.wav', 'isHidden' => false, 'isMain' => false, 'isPreview' => false],
-            ['path' => './Audio/moon.jpg', 'isHidden' => false, 'isMain' => true, 'isPreview' => false],
+            ['path' => './Audio/juhani-junkala.wav', 'isHidden' => false, 'order' => 1, 'isPreview' => false],
+            ['path' => './Audio/moon.jpg', 'isHidden' => false, 'order' => 2, 'isPreview' => false],
         ]
     ],
     [
@@ -125,7 +125,7 @@ const DEV_ASSETS = [
         'category' => CAT_2D_TEXTURES,
         'tags' => [TAG_STYLIZED],
         'files' => [
-            ['path' => './Texture/colormap.png', 'isHidden' => false, 'isMain' => true, 'isPreview' => false],
+            ['path' => './Texture/colormap.png', 'isHidden' => false, 'order' => 1, 'isPreview' => false],
         ]
     ],
 ];

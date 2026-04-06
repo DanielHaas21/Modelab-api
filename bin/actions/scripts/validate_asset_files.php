@@ -19,6 +19,7 @@ $data_path = AssetFilesConfig::$DATA_PATH;
 if (!is_dir($data_path)) {
     echoLine('Data folder not found, attempting to create...');
 
+    umask(0);
     // Source - https://stackoverflow.com/a/37270421
     // Posted by Oldskool, modified by community. See post 'Timeline' for change history
     // Retrieved 2026-04-05, License - CC BY-SA 3.0
@@ -27,7 +28,7 @@ if (!is_dir($data_path)) {
         exit(1);
     }
 
-    if (!chmod($data_path, 999)) {
+    if (!chmod($data_path, 0777)) {
         echoLine('Data folder failed to set permissions');
         rmdir($data_path);
         exit(1);

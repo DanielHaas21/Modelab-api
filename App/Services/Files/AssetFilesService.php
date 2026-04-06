@@ -13,15 +13,41 @@ use Exception;
 
 class AssetFilesService
 {
-    public function ExtractFilesData(array $filesMeta, ?array $uploadedFiles): array
+    public function __construct()
     {
-        $filesData = [];
-        $uploadIndex = 0;
+        AssetFilesConfig::Load();
+    }
 
-        foreach ($filesMeta as $meta) {
+    public function ExtractFileExtension(string $file_name): string
+    {
+        return pathinfo($file_name, PATHINFO_EXTENSION);
+    }
+
+    public function FindFileGroupFromName(string $file_name): ?string
+    {
+        $extension = $this->ExtractFileExtension($file_name);
+        return $this->FindFileGroup($extension);
+    }
+
+    public function FindFileGroup(string $extension): ?string
+    {
+        foreach (AssetFilesConfig::$SUPPORTED_EXTENSIONS as $group => $extensions) {
+            if (in_array($extension, $extensions)) {
+                return $group;
+            }
+        }
+        return null;
+    }
+
+    public function ExtractFilesData(array $files_meta, ?array $uploaded_files): array
+    {
+        $files_data = [];
+        $upload_index = 0;
+
+        foreach ($files_meta as $meta) {
             $id = $meta['id'] ?? null;
             $isHidden = ($meta['isHidden'] ?? false) == true;
-            $isMain = ($meta['isMain'] ?? false) == true;
+            $order = ($meta['order'] ?? false) == true;
             $isRemoved = ($meta['isRemoved'] ?? false) == true;
             $isPreview = ($meta['isPreview'] ?? false) == true;
 
@@ -33,12 +59,12 @@ class AssetFilesService
                     throw RequestError::CreateFieldError(404, 'filesMeta', 'File with id: \'' . $id . '\' doesn\'t exist');
                 }
 
-                $filesData[] = [
+                $files_data[] = [
                     'name' => null,
                     'type' => null,
-                    'tmpName' => null,
+                    'tmp_name' => null,
                     'isHidden' => $isHidden,
-                    'isMain' => $isMain,
+                    'order' => $order,
                     'isRemoved' => $isRemoved,
                     'isPreview' => $isPreview,
                     'file' => $file
@@ -48,47 +74,41 @@ class AssetFilesService
                     continue;
                 }
 
-                if ($uploadedFiles === null || !isset($uploadedFiles['name'][$uploadIndex])) {
+                if ($uploaded_files === null || !isset($uploaded_files['name'][$upload_index])) {
                     throw RequestError::CreateFieldError(400, 'files', 'Missing file upload for metadata');
                 }
 
-                $type = $uploadedFiles['type'][$uploadIndex];
-                $fileName = $uploadedFiles['name'][$uploadIndex];
-                $tmpName = $uploadedFiles['tmp_name'][$uploadIndex];
-                $size = $uploadedFiles['size'][$uploadIndex];
+                $type = $uploaded_files['type'][$upload_index];
+                $file_name = $uploaded_files['name'][$upload_index];
+                $tmp_name = $uploaded_files['tmp_name'][$upload_index];
+                $size = $uploaded_files['size'][$upload_index];
 
                 if ($size > AssetFilesConfig::$MAX_SIZE_BYTES) {
-                    throw RequestError::CreateFieldError(400, 'files', 'File \'' . $fileName . '\' is too large. Max size: \'' . AssetFilesConfig::$MAX_SIZE_BYTES . ' B\'');
+                    throw RequestError::CreateFieldError(400, 'files', 'File \'' . $file_name . '\' is too large. Max size: \'' . AssetFilesConfig::$MAX_SIZE_BYTES . ' B\'');
                 }
 
-                $foundTypeGroup = null;
-                foreach (AssetFilesConfig::$SUPPORTED_TYPES as $groupName => $typeGroup) {
-                    if (in_array($type, $typeGroup)) {
-                        $foundTypeGroup = $groupName;
-                        break;
-                    }
+                $extension = $this->ExtractFileExtension($file_name);
+                $file_group = $this->FindFileGroup($extension);
+                if ($file_group == null) {
+                    throw RequestError::CreateFieldError(400, 'files', 'File \'' . $file_name . '\' is of unsupported file extension: \'' . $extension . '\'');
                 }
 
-                if ($foundTypeGroup == null) {
-                    throw RequestError::CreateFieldError(400, 'files', 'File \'' . $fileName . '\' has unsupported file type: \'' . $type . '\'');
-                }
-
-                $filesData[] = [
-                    'name' => $fileName,
+                $files_data[] = [
+                    'name' => $file_name,
                     'type' => $type,
-                    'tmpName' => $tmpName,
+                    'tmp_name' => $tmp_name,
                     'isHidden' => $isHidden,
-                    'isMain' => $isMain,
+                    'order' => $order,
                     'isRemoved' => false,
                     'isPreview' => $isPreview,
                     'file' => null
                 ];
 
-                $uploadIndex++;
+                $upload_index++;
             }
         }
 
-        return $filesData;
+        return $files_data;
     }
 
     public function CreateAsset(User $uploader, string $name, string $description, Category $category, array $tags, array $filesData, ?string $author): Asset
@@ -110,41 +130,49 @@ class AssetFilesService
         $asset->filesDirectory = $filesDirectory;
         $asset->Update();
 
-        if (!mkdir($asset->filesDirectory, 0777, true)) {
+        try {
+            if (!mkdir($asset->filesDirectory, 0777, true)) {
+                throw new Exception('Failed to create asset directory');
+            }
+
+            foreach ($filesData as $fileData) {
+                $tmp_name = $fileData['tmp_name'];
+                $file_name = $fileData['name'];
+                $path = $asset->filesDirectory . '/' . uniqid() . '_' . $file_name;
+
+                $group = $this->FindFileGroupFromName($file_name);
+                if ($group == null) {
+                    throw new Exception('File is not supported: \'' . $file_name . '\'');
+                }
+
+                if (is_uploaded_file($tmp_name)) {
+                    if (!move_uploaded_file($tmp_name, $path)) {
+                        throw new Exception('Failed to move uploaded file: \'' . $file_name . '\'');
+                    }
+                } else {
+                    if (!copy($tmp_name, $path)) {
+                        throw new Exception('Failed to copy local file: \'' . $file_name . '\'');
+                    }
+                }
+
+                $file = new File();
+                $file->path = realpath($path) ?: $path;
+                $file->name = $file_name;
+                $file->group = $group;
+                $file->order = $fileData['order'];
+                $file->isHidden = $fileData['isHidden'] ? 1 : 0;
+                $file->assetId = $asset->id;
+
+                $fileId = $file->Insert();
+
+                if ($fileData['isPreview']) {
+                    $asset->previewFileId = $fileId;
+                    $asset->Update();
+                }
+            }
+        } catch (Exception $e) {
             $asset->Delete();
-            throw new Exception('Failed to create asset directory');
-        }
-
-        foreach ($filesData as $fileData) {
-            $tmpName = $fileData['tmpName'];
-            $fileName = $fileData['name'];
-            $path = $asset->filesDirectory . '/' . uniqid() . '_' . $fileName;
-
-            // Conditional upload check for CLI support
-            if (is_uploaded_file($tmpName)) {
-                if (!move_uploaded_file($tmpName, $path)) {
-                    throw new Exception('Failed to move uploaded file: \'' . $fileName . '\'');
-                }
-            } else {
-                if (!copy($tmpName, $path)) {
-                    throw new Exception('Failed to copy local file: \'' . $fileName . '\'');
-                }
-            }
-
-            $file = new File();
-            $file->path = $path;
-            $file->name = $fileData['name'];
-            $file->type = $fileData['type'];
-            $file->isMain = $fileData['isMain'] ? 1 : 0;
-            $file->isHidden = $fileData['isHidden'] ? 1 : 0;
-            $file->assetId = $asset->id;
-
-            $fileId = $file->Insert();
-
-            if ($fileData['isPreview']) {
-                $asset->previewFileId = $fileId;
-                $asset->Update();
-            }
+            throw $e;
         }
 
         foreach ($tags as $tag) {
@@ -182,7 +210,7 @@ class AssetFilesService
             $file = $fileData['file'];
             $isRemoved = $fileData['isRemoved'];
             $isHidden = $fileData['isHidden'];
-            $isMain = $fileData['isMain'];
+            $order = $fileData['order'];
             $isPreview = $fileData['isPreview'];
 
             if ($file != null) {
@@ -204,7 +232,7 @@ class AssetFilesService
                 }
 
                 $file->isHidden = $isHidden ? 1 : 0;
-                $file->isMain = $isMain ? 1 : 0;
+                $file->order = $order;
                 $file->Update();
 
                 if ($isPreview) {
@@ -212,25 +240,30 @@ class AssetFilesService
                     $asset->Update();
                 }
             } else {
-                $tmpName = $fileData['tmpName'];
-                $fileName = $fileData['name'];
-                $path = $asset->filesDirectory . '/' . uniqid() . '_' . $fileName;
+                $tmp_name = $fileData['tmp_name'];
+                $file_name = $fileData['name'];
+                $path = $asset->filesDirectory . '/' . uniqid() . '_' . $file_name;
 
-                if (is_uploaded_file($tmpName)) {
-                    if (!move_uploaded_file($tmpName, $path)) {
-                        throw new Exception('Failed to move uploaded file: \'' . $fileName . '\'');
+                $group = $this->FindFileGroupFromName($file_name);
+                if ($group == null) {
+                    throw new Exception('File is not supported: \'' . $file_name . '\'');
+                }
+
+                if (is_uploaded_file($tmp_name)) {
+                    if (!move_uploaded_file($tmp_name, $path)) {
+                        throw new Exception('Failed to move uploaded file: \'' . $file_name . '\'');
                     }
                 } else {
-                    if (!copy($tmpName, $path)) {
-                        throw new Exception('Failed to copy local file: \'' . $fileName . '\'');
+                    if (!copy($tmp_name, $path)) {
+                        throw new Exception('Failed to copy local file: \'' . $file_name . '\'');
                     }
                 }
 
                 $file = new File();
                 $file->path = $path;
-                $file->name = $fileData['name'];
-                $file->type = $fileData['type'];
-                $file->isMain = $fileData['isMain'] ? 1 : 0;
+                $file->name = $file_name;
+                $file->group = $this->FindFileGroupFromName($file_name);
+                $file->order = $fileData['order'];
                 $file->isHidden = $fileData['isHidden'] ? 1 : 0;
                 $file->assetId = $asset->id;
 
@@ -245,7 +278,7 @@ class AssetFilesService
 
         $assetTags = AssetTag::SelectWhereModels('assetId = :assetId', [':assetId' => $asset->id]);
 
-        // Sync tags (delete removed ones)
+        // sync tags (delete removed ones)
         foreach ($assetTags as $curentTag) {
             $wasDeleted = true;
             foreach ($tags as $tag) {
@@ -260,7 +293,7 @@ class AssetFilesService
             }
         }
 
-        // Sync tags (insert new ones)
+        // sync tags (insert new ones)
         foreach ($tags as $tag) {
             $existingTags = AssetTag::SelectWhereModels('assetId = :assetId AND tagId = :tagId', [':assetId' => $asset->id, ':tagId' => $tag->id]);
             if (count($existingTags) > 0) {
@@ -291,5 +324,60 @@ class AssetFilesService
         }
 
         $asset->Delete();
+    }
+
+    public function RemoveStrayAssetFiles(): void
+    {
+        $asset_dirs = glob(AssetFilesConfig::$DATA_PATH . '/*');
+
+        /**
+         * @var Asset[]
+         */
+        $assets = Asset::SelectAllModels();
+
+        /**
+         * @var File[]
+         */
+        $files = File::SelectAllModels();
+
+        foreach ($asset_dirs as $asset_dir) {
+            $file_paths = glob($asset_dir . '/*');
+
+            foreach ($file_paths as $file_path) {
+                $is_stray = true;
+
+                foreach ($files as $file) {
+                    if (realpath($file->path) == realpath($file_path)) {
+                        $is_stray = false;
+                        break;
+                    }
+                }
+
+                if (!$is_stray) {
+                    continue;
+                }
+
+                if (!unlink($file_path)) {
+                    throw new Exception('Failed to remove stray file: \'' . $file_path . '\'');
+                }
+            }
+
+            $is_stray = true;
+
+            foreach ($assets as $asset) {
+                if (realpath($asset->filesDirectory) == realpath($asset_dir)) {
+                    $is_stray = false;
+                    break;
+                }
+            }
+
+            if (!$is_stray) {
+                continue;
+            }
+
+            if (!rmdir($asset_dir)) {
+                throw new Exception('Failed to remove stray asset folder: \'' . $asset_dir . '\'');
+            }
+        }
     }
 }

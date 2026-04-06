@@ -2,7 +2,6 @@
 
 use App\Services\Database\Exceptions\DatabaseException;
 use App\Services\Database\Exceptions\SQLExecutionException;
-use App\Services\Database\PDOConfig;
 use App\Services\Database\SQL;
 use App\Configuration\Env;
 
@@ -13,7 +12,6 @@ echoLine();
 echoLine('Validating DB...');
 
 Env::Load();
-PDOConfig::Load();
 
 // Check PDO
 echoLine('Initializing PDO...');

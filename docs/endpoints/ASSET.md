@@ -215,9 +215,10 @@ Returns the files info of an asset by it's id.
         {
             "id": 1,
             "name": "house.fbx",
+            "group": "model",
             "fileType": "application/octet-stream",
             "isHidden": false,
-            "isMain": true,
+            "order": 1,
             "isPreview": false
         },
         // ...
@@ -239,9 +240,9 @@ Returns all assets in a paginated form with some search parameters. The assets a
 
 `n` is the index of the current tag. `m` is the index of the current file.
 
-- IsPreview file can be only 1 and it is used in the browser preview.
-- IsHidden files are not shown in the model detail carousel.
-- IsMain files are first in the model detail carousel.
+- `isPreview` file can be only 1 and it is used in the browser preview.
+- `isHidden` files are not shown in the model detail carousel.
+- `order` specifies the detail carousel order.
 
 `Content-Type: multipart/form-data`
 | Key                     | Value                           |
@@ -251,9 +252,9 @@ Returns all assets in a paginated form with some search parameters. The assets a
 | Author                  | John Doe                        |
 | categoryId              | 1 (category id)                 |
 | tagIds[n]               | 2 (tag id)                      |
-| filesMeta[m][isHidden]  | 0 (1 is true, 0 is false)       |
-| filesMeta[m][isMain]    | 1 (1 is true, 0 is false)       |
 | filesMeta[m][isPreview] | 0 (1 is true, 0 is false)       |
+| filesMeta[m][isHidden]  | 0 (1 is true, 0 is false)       |
+| filesMeta[m][order]     | 1 (number)                      |
 | files[m]                | (raw file data)                 |
 
 ### Response
@@ -279,10 +280,10 @@ Returns all assets in a paginated form with some search parameters. The assets a
 
 `n` is the index of the current tag. `m` is the index of the current file.
 
-- IsPreview file can be only 1 and it is used in the browser preview.
-- IsHidden files are not shown in the model detail carousel.
-- IsMain files are first in the model detail carousel.
-- IsRemoved files are deleted.
+- `isPreview` file can be only 1 and it is used in the browser preview.
+- `isHidden` files are not shown in the model detail carousel.
+- `isRemoved` files are deleted.
+- `order` specifies the detail carousel order.
 
 The file[m] raw data should be only sent for new files. 
 Otherwise send the filesMeta[m][id].
@@ -295,10 +296,10 @@ Otherwise send the filesMeta[m][id].
 | Author                  | John Doe                        |
 | categoryId              | 1 (category id)                 |
 | tagIds[n]               | 2 (tag id)                      |
-| filesMeta[m][isHidden]  | 0 (1 is true, 0 is false)       |
-| filesMeta[m][isMain]    | 1 (1 is true, 0 is false)       |
 | filesMeta[m][isPreview] | 0 (1 is true, 0 is false)       |
+| filesMeta[m][isHidden]  | 0 (1 is true, 0 is false)       |
 | filesMeta[m][isRemoved] | 0 (1 is true, 0 is false)       |
+| filesMeta[m][order]     | 1 (number)                      |
 | filesMeta[m][id]        | 0 (file meta id)                |
 | files[m]                | (raw file data)                 |
 
