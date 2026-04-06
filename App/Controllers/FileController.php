@@ -154,10 +154,10 @@ class FileController
         return [
             'id' => $file->id,
             'name' => $file->name,
-            'group' => $file->group,
+            'group' => $file->fileGroup,
             'fileType' => $mimeType,
             'isHidden' => $file->isHidden,
-            'order' => $file->order,
+            'order' => $file->fileOrder,
             'isPreview' => $file->id == $asset->previewFileId
         ];
     }
@@ -217,7 +217,7 @@ class FileController
                 throw RequestError::CreateFieldError(404, 'id', 'File with %key%: \'' . $id . '\' doesn\'t exist');
             }
 
-            static::HostPreview($file->group, $file);
+            static::HostPreview($file->fileGroup, $file);
         };
     }
 
@@ -281,7 +281,35 @@ class FileController
     /**
     * @return (\Closure(Request $req, Response $res): void)
     */
-    public static function SelectSupportedFileTypes(): \Closure
+    public static function CheckIfFileIsSupported(): \Closure
+    {
+        return function (Request $req, Response $res): void {
+            $data = $req->GetJSON();
+
+            DataValidator::ValidateFieldsAre(DataValidator::REQUIRED, $data, ['fileName', 'fileSizeBytes']);
+
+            $file_name = $data['fileName'];
+            $file_size_bytes = $data['fileSizeBytes'];
+
+            $service = new AssetFilesService();
+
+            $group = $service->FindFileGroupFromName($file_name);
+            $has_group = $group != null;
+            $fits_size = $service->FitsRequiredSize($file_size_bytes);
+
+            $is_supported = $has_group && $fits_size;
+
+            $res->SetJSON([
+                'isSupported' => $is_supported,
+                'group' => $group,
+            ]);
+        };
+    }
+
+    /**
+    * @return (\Closure(Request $req, Response $res): void)
+    */
+    public static function SelectSupportedFileExtensions(): \Closure
     {
         return function (Request $req, Response $res): void {
             $res->SetJSON([

@@ -116,7 +116,7 @@ const DEV_ASSETS = [
         'tags' => [TAG_MUSIC],
         'files' => [
             ['path' => './Audio/juhani-junkala.wav', 'isHidden' => false, 'order' => 1, 'isPreview' => false],
-            ['path' => './Audio/moon.jpg', 'isHidden' => false, 'order' => 2, 'isPreview' => false],
+            ['path' => './Audio/moon.jpg', 'isHidden' => false, 'order' => 2, 'isPreview' => true],
         ]
     ],
     [

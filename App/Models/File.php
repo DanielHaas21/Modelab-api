@@ -22,7 +22,7 @@ class File extends BaseModelId
      * @sql VARCHAR(128) NOT NULL
      * @var string
      */
-    public $group;
+    public $fileGroup;
 
     /**
      * @sql BOOLEAN NOT NULL
@@ -34,7 +34,7 @@ class File extends BaseModelId
      * @sql INTEGER NOT NULL
      * @var int
      */
-    public $order;
+    public $fileOrder;
 
     /**
      * @sql INTEGER NOT NULL

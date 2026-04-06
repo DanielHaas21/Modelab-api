@@ -10,6 +10,11 @@ use App\Models\Auth\UserMeta;
 
 class UserService
 {
+    public function __construct()
+    {
+        AppConfig::Load();
+    }
+
     public function GetOrCreateUser(string $email, string $givenName, string $familyName, string $picture): User
     {
         $user = User::SelectUser($email);

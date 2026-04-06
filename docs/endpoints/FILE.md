@@ -13,13 +13,16 @@ Defined in: [fileRoutes.php](../../routes/fileRoutes.php)
   - [Select Supported File Types](#select-supported-file-types)
     - [Request](#request)
     - [Response](#response)
-  - [Select File Metadata](#select-file-metadata)
+  - [Check If File Is Supported](#check-if-file-is-supported)
     - [Request](#request-1)
     - [Response](#response-1)
-  - [Select Preview](#select-preview)
+  - [Select File Metadata](#select-file-metadata)
+    - [Request](#request-2)
     - [Response](#response-2)
-  - [Select](#select)
+  - [Select Preview](#select-preview)
     - [Response](#response-3)
+  - [Select](#select)
+    - [Response](#response-4)
 
 ## Select Supported File Types
 
@@ -60,6 +63,35 @@ Returns all supported file types.
             // ...
         ]
     },
+}
+```
+
+## Check If File Is Supported
+
+Checks if file is supported by the server
+
+| Feature   | Value                 |
+| --------- | --------------------- |
+| URI       | `/file/isSupported  ` |
+| Method    | `POST`                |
+| Clearance | Guest                 |
+
+### Request
+
+`Content-Type: application/json`
+```json
+{
+    "fileName": "house.fbx",
+    "fileSizeBytes": 23000000
+}
+```
+
+### Response
+
+```json
+{
+    "isSupported": false,
+    "group": "model",
 }
 ```
 

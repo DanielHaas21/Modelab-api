@@ -8,6 +8,7 @@ use App\Models\Auth\User;
 use App\Models\Category;
 use App\Models\File;
 use App\Models\Tag;
+use App\Services\Logging\Logger;
 use App\Services\Router\RequestError;
 use Exception;
 
@@ -39,6 +40,11 @@ class AssetFilesService
         return null;
     }
 
+    public function FitsRequiredSize(int $file_size_bytes): bool
+    {
+        return $file_size_bytes > 0 && $file_size_bytes <= AssetFilesConfig::$MAX_SIZE_BYTES;
+    }
+
     public function ExtractFilesData(array $files_meta, ?array $uploaded_files): array
     {
         $files_data = [];
@@ -47,9 +53,9 @@ class AssetFilesService
         foreach ($files_meta as $meta) {
             $id = $meta['id'] ?? null;
             $isHidden = ($meta['isHidden'] ?? false) == true;
-            $order = ($meta['order'] ?? false) == true;
             $isRemoved = ($meta['isRemoved'] ?? false) == true;
             $isPreview = ($meta['isPreview'] ?? false) == true;
+            $order = intval($meta['order']) ?? 0;
 
             if ($id != null) {
                 $id = intval($id);
@@ -83,7 +89,7 @@ class AssetFilesService
                 $tmp_name = $uploaded_files['tmp_name'][$upload_index];
                 $size = $uploaded_files['size'][$upload_index];
 
-                if ($size > AssetFilesConfig::$MAX_SIZE_BYTES) {
+                if (!$this->FitsRequiredSize($size)) {
                     throw RequestError::CreateFieldError(400, 'files', 'File \'' . $file_name . '\' is too large. Max size: \'' . AssetFilesConfig::$MAX_SIZE_BYTES . ' B\'');
                 }
 
@@ -100,7 +106,7 @@ class AssetFilesService
                     'isHidden' => $isHidden,
                     'order' => $order,
                     'isRemoved' => false,
-                    'isPreview' => $isPreview,
+                    'isPreview' => $isPreview && !$isHidden,
                     'file' => null
                 ];
 
@@ -111,8 +117,29 @@ class AssetFilesService
         return $files_data;
     }
 
+    private function CheckFilesData(array $files_data): array
+    {
+        $is_preview_set = false;
+
+        foreach ($files_data as $data) {
+            $is_preview = $data['isPreview'];
+
+            if ($is_preview) {
+                $is_preview_set = true;
+            }
+        }
+
+        if (!$is_preview_set && count($files_data) > 0) {
+            $files_data[0]['isPreview'] = true;
+        }
+
+        return $files_data;
+    }
+
     public function CreateAsset(User $uploader, string $name, string $description, Category $category, array $tags, array $filesData, ?string $author): Asset
     {
+        $filesData = $this->CheckFilesData($filesData);
+
         $asset = new Asset();
         $asset->name = trim($name);
         $asset->description = trim($description);
@@ -158,8 +185,8 @@ class AssetFilesService
                 $file = new File();
                 $file->path = realpath($path) ?: $path;
                 $file->name = $file_name;
-                $file->group = $group;
-                $file->order = $fileData['order'];
+                $file->fileGroup = $group;
+                $file->fileOrder = $fileData['order'];
                 $file->isHidden = $fileData['isHidden'] ? 1 : 0;
                 $file->assetId = $asset->id;
 
@@ -197,6 +224,8 @@ class AssetFilesService
      */
     public function UpdateAsset(Asset $asset, string $name, string $description, Category $category, array $tags, array $filesData, ?string $author): void
     {
+        $filesData = $this->CheckFilesData($filesData);
+
         $asset->name = trim($name);
         $asset->description = trim($description);
         $asset->author = ($author === null || trim($author) === '') ? null : trim($author);
@@ -262,8 +291,8 @@ class AssetFilesService
                 $file = new File();
                 $file->path = $path;
                 $file->name = $file_name;
-                $file->group = $this->FindFileGroupFromName($file_name);
-                $file->order = $fileData['order'];
+                $file->fileGroup = $this->FindFileGroupFromName($file_name);
+                $file->fileOrder = $fileData['order'];
                 $file->isHidden = $fileData['isHidden'] ? 1 : 0;
                 $file->assetId = $asset->id;
 
