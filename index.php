@@ -32,8 +32,8 @@ Logger::RegisterHandler(new DBLogHandler());
 $router = new Router();
 
 $router->OnError(function (RouterError $error): void {
-    if ($error->GetType() != RouterError::TYPE_FATAL) {
-        return;
+    if ($error->GetType() == RouterError::TYPE_ACCESS) {
+        return; // Ignore access errors
     }
 
     $shutdown_error = $error->GetShutdownError();

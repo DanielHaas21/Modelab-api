@@ -32,13 +32,11 @@ class FileLogHandler implements ILogHandler
     private function WriteLog(string $line)
     {
         $file_path = $this->GetLogFilePath();
+
         $file = fopen($file_path, 'a');
         if (!$file) {
             throw new Exception('Failed to open log file: ' . $file_path . ', most likely because of permissions');
         }
-
-        umask(0);
-        chmod($file_path, 999);
 
         try {
             fwrite($file, trim($line) . PHP_EOL);

@@ -2,19 +2,12 @@
 
 use App\Configuration\Env;
 use App\Services\Files\AssetFilesConfig;
-use App\Configuration\Validators\FILESvalidator;
 
 require_once __DIR__ . '/utils.php';
-
-require_once __DIR__ . '/../../../config/files.example.php';
 
 echoLine('Validating files config...');
 
 Env::Load();
-
-$FILESvalidator = new FILESvalidator(FILES_CONFIG);
-$FILESvalidator->Run();
-
 AssetFilesConfig::Load();
 
 echoLine('Files config OK');

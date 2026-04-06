@@ -3,6 +3,7 @@
 namespace App\Services\Logging;
 
 use DateTime;
+use Exception;
 
 class Logger
 {
@@ -13,8 +14,21 @@ class Logger
 
     private static function HandleLog(Log $log)
     {
+        $exceptions = [];
         foreach (self::$handlers as $handler) {
-            $handler->HandleLog($log);
+            try {
+                $handler->HandleLog($log);
+            } catch (Exception $e) {
+                $exceptions[] = $e;
+            }
+        }
+
+        if (count($exceptions) > 0) {
+            $all_messages = 'Exceptions while handling logs: ' . count($exceptions) . ' => ';
+            foreach ($exceptions as $exception) {
+                $all_messages .= "\n" . $exception->getMessage();
+            }
+            throw new Exception($all_messages);
         }
     }
 

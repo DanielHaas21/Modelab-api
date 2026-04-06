@@ -23,10 +23,7 @@ class AssetFilesConfig
         self::$DATA_PATH = Env::ENV_PATHS_ROOT . $_ENV[self::ENV_DATA_PATH];
         self::$MAX_SIZE_BYTES = intval($_ENV[self::ENV_DATA_MAX_SIZE_MB]) * 1000000;
 
-        $config_path = __DIR__ . '/../../../config/files.php';
-        if (is_file($config_path)) {
-            require_once($config_path);
-            self::$SUPPORTED_TYPES = FILES_CONFIG['supportedTypes'];
-        }
+        require_once __DIR__ . '/../../../config/files.php';
+        self::$SUPPORTED_TYPES = FILES_CONFIG['supportedTypes'];
     }
 }
