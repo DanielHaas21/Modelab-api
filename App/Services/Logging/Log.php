@@ -2,6 +2,7 @@
 
 namespace App\Services\Logging;
 
+use App\Services\Database\DateUtils;
 use DateTime;
 
 class Log
@@ -56,12 +57,11 @@ class Log
 
     public function ToText()
     {
-        $timestamp = $this->date->format('Y-m-d H:i:s');
         $status = LogStatus::GetName($this->status);
 
         return sprintf(
             '[%s] %s | %s: %s',
-            $timestamp,
+            DateUtils::ToDatabase($this->date),
             $status,
             $this->origin,
             $this->message

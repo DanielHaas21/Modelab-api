@@ -8,7 +8,7 @@ use App\Models\Auth\User;
 use App\Models\Category;
 use App\Models\File;
 use App\Models\Tag;
-use App\Services\Logging\Logger;
+use App\Services\Database\DateUtils;
 use App\Services\Router\RequestError;
 use Exception;
 
@@ -148,8 +148,8 @@ class AssetFilesService
         $asset->uploaderId = $uploader->id;
 
         $currentTime = new \DateTime();
-        $asset->created = $currentTime->format('Y-m-d H:i:s');
-        $asset->updated = $currentTime->format('Y-m-d H:i:s');
+        $asset->created = DateUtils::ToDatabase($currentTime);
+        $asset->updated = DateUtils::ToDatabase($currentTime);
 
         $asset->Insert();
 
@@ -232,7 +232,7 @@ class AssetFilesService
         $asset->categoryId = $category->id;
 
         $currentTime = new \DateTime();
-        $asset->updated = $currentTime->format('Y-m-d H:i:s');
+        $asset->updated = DateUtils::ToDatabase($currentTime);
         $asset->Update();
 
         foreach ($filesData as $fileData) {

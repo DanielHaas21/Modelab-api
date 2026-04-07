@@ -11,7 +11,7 @@ use App\Services\Router\RequestError;
 use App\Services\Router\DataValidator;
 use App\Services\Router\Response;
 
-require_once __DIR__ . '/../../config/preview-data/preview_data.php';
+require_once __DIR__ . '/../../config/previews/preview_data.php';
 
 class FileController
 {

@@ -3,6 +3,7 @@
 namespace App\Models\Auth;
 
 use App\Services\Database\BaseModels\BaseModelId;
+use App\Services\Database\DateUtils;
 
 /**
  * Model of a user login session
@@ -13,7 +14,7 @@ class LoginSession extends BaseModelId
 
     private static function GenerateToken(): string
     {
-        $bytes = \random_bytes(32);
+        $bytes = random_bytes(32);
         return bin2hex($bytes);
     }
 
@@ -24,12 +25,12 @@ class LoginSession extends BaseModelId
         }
 
         $currentTime = new \DateTime();
-        $dateRefreshed = new \DateTime($session->refreshed);
+        $dateRefreshed = DateUtils::FromDatabase($session->refreshed);
 
         $isRefreshable = $currentTime->getTimestamp() - $dateRefreshed->getTimestamp() <= static::MAX_TOKEN_REFRESH_INTERVAL_SECONDS;
 
         if ($isRefreshable) {
-            $session->refreshed = $currentTime->format('Y-m-d H:i:s');
+            $session->refreshed = DateUtils::ToDatabase($currentTime);
             static::UpdateModel($session);
             return $session;
         } else {
@@ -46,7 +47,7 @@ class LoginSession extends BaseModelId
 
         /**
          * @var LoginSession|null
-         */
+        */
         $session = count($sessions) == 0 ? null : $sessions[0];
 
         $session = static::TryRefreshSession($session);
@@ -88,7 +89,7 @@ class LoginSession extends BaseModelId
             $session = new LoginSession();
             $session->userId = $user->id;
             $session->token = static::GenerateToken();
-            $session->refreshed = $currentTime->format('Y-m-d H:i:s');
+            $session->refreshed = DateUtils::ToDatabase($currentTime);
 
             $sessionId = static::InsertModel($session);
             return static::SelectModel($sessionId);

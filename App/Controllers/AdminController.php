@@ -5,11 +5,11 @@ namespace App\Controllers;
 use App\Services\Database\SQL;
 use App\Services\Logging\LogStatus;
 use App\Models\Config\Log;
+use App\Services\Database\DateUtils;
 use App\Services\Router\DataValidator;
 use App\Services\Router\Request;
 use App\Services\Router\RequestError;
 use App\Services\Router\Response;
-use DateTime;
 use Exception;
 
 class AdminController
@@ -120,12 +120,12 @@ class AdminController
             try {
                 if (!empty($dateStartQuery)) {
                     $searchConditions[] = "date >= :dateStart";
-                    $searchParams[':dateStart'] = (new DateTime($dateStartQuery))->format('Y-m-d H:i:s');
+                    $searchParams[':dateStart'] = DateUtils::ToDatabase(new \DateTime($dateStartQuery));
                 }
 
                 if (!empty($dateEndQuery)) {
                     $searchConditions[] = "date <= :dateEnd";
-                    $searchParams[':dateEnd'] = (new DateTime($dateEndQuery))->format('Y-m-d H:i:s');
+                    $searchParams[':dateEnd'] = DateUtils::ToDatabase(new \DateTime($dateEndQuery));
                 }
             } catch (Exception $e) {
                 throw RequestError::CreateFieldError(400, 'dateQuery', 'Invalid date format provided');

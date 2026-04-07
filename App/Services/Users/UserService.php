@@ -7,22 +7,38 @@ use App\Middleware\Clearance;
 use App\Models\Auth\LoginSession;
 use App\Models\Auth\User;
 use App\Models\Auth\UserMeta;
+use App\Services\Settings\SettingKey;
+use App\Services\Settings\SettingsService;
+use Exception;
 
 class UserService
 {
+    /**
+     * @var SettingsService
+     */
+    private $settings_service;
+
     public function __construct()
     {
         AppConfig::Load();
+
+        $this->settings_service = new SettingsService();
     }
 
-    public function GetOrCreateUser(string $email, string $givenName, string $familyName, string $picture): User
+    public function IsEmailAllowed(string $email): bool
     {
-        $user = User::SelectUser($email);
+        $domain = substr($email, strrpos($email, '@') + 1);
 
-        if ($user != null) {
-            return $user;
-        }
+        /**
+         * @var string[]
+         */
+        $domain_whitelist = $this->settings_service->GetSetting(SettingsService::ALLOWED_EMAIL_DOMAINS)['value'];
 
+        return in_array($domain, $domain_whitelist);
+    }
+
+    private function CreateUncheckedUser(string $email, string $givenName, string $familyName, string $picture): User
+    {
         $user = new User();
         $user->email = $email;
         $user->givenName = $givenName;
@@ -43,9 +59,24 @@ class UserService
         return User::SelectModel($userId);
     }
 
+    public function GetOrCreateUser(string $email, string $givenName, string $familyName, string $picture): User
+    {
+        $user = User::SelectUser($email);
+
+        if ($user != null) {
+            return $user;
+        }
+
+        if (!$this->IsEmailAllowed($email)) {
+            throw new Exception('Provided email is not allowed');
+        }
+
+        return $this->CreateUncheckedUser($email, $givenName, $familyName, $picture);
+    }
+
     public function GetOrCreateDevUser(): User
     {
-        return $this->GetOrCreateUser(
+        return $this->CreateUncheckedUser(
             'john.doe@test.com',
             'John',
             'Doe',

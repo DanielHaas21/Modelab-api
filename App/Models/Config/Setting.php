@@ -11,11 +11,29 @@ class Setting extends BaseModelId
      * @isUnique
      * @var string
      */
-    public $name;
+    public $key;
 
     /**
-     * @sql TEXT NULL
+     * @sql LONGTEXT NULL
      * @var string|null
      */
     public $value;
+
+    /**
+     * @sql INTEGER NULL
+     * @var int
+     */
+    public $read_clearance;
+
+    /**
+     * @sql INTEGER NULL
+     * @var int
+     */
+    public $write_clearance;
+
+    /**
+     * @sql DATETIME NOT NULL
+     * @var string
+     */
+    public $updated;
 }
